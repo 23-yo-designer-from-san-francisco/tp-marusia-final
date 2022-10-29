@@ -10,35 +10,61 @@ type myPayload struct {
 	marusia.DefaultPayload
 }
 
+func getTextStringFromId(audioVkId string) string {
+	return "Что сейчас играет? <speaker audio_vk_id=" + audioVkId + ">"
+}
+
+type Duration int64
+
+const (
+	Two Duration = iota
+	Five
+	Ten
+)
+
+type Session struct {
+	currentLevel     Duration
+	currentPoints    int64
+	currentTrackName string
+}
+
 // Навык "Угадай музло"
 func main() {
 	wh := marusia.NewWebhook()
 	wh.EnableDebuging()
 
+	sessions := make(map[string]Session)
+
 	wh.OnEvent(func(r marusia.Request) (resp marusia.Response) {
+		userSession, ok := sessions[r.Session.SessionID]
+		if !ok {
+			sessions[r.Session.SessionID] = Session{currentLevel: Two, currentPoints: 0, currentTrackName: ""}
+		}
 		switch r.Request.Type {
 		case marusia.SimpleUtterance:
 			switch r.Request.Command {
 			case marusia.OnStart:
 				resp.Text = "Скилл запущен"
 				resp.TTS = "Скилл запущен, жду команд"
-			case "кнопки":
-				resp.Text = "Держи кнопки"
-				resp.TTS = "Жми на кнопки"
-				resp.AddURL("ссылка", "https://vk.com")
-				resp.AddButton("подсказка без нагрузки", nil)
-				resp.AddButton("подсказка с нагрузкой", myPayload{
-					Text: "test",
-				})
-			case "музон":
-				resp.Text = "Что сейчас играет? <speaker audio_vk_id=2000512001_456239024>"
+			case "+":
+				userSession.currentTrackName = "gspd россия"
+				sessions[r.Session.SessionID] = userSession
+				resp.Text = getTextStringFromId("2000512001_456239026")
 			case marusia.OnInterrupt:
 				resp.Text = "Скилл закрыт"
 				resp.TTS = "Пока"
 				resp.EndSession = true
 			default:
-				resp.Text = "Неизвестная команда"
-				resp.TTS = "Я вас \"НЕ СОВСЕМ\" поняла"
+				if ok {
+					if r.Request.Command == userSession.currentTrackName {
+						resp.Text = "Вы молодец, угадали!"
+					} else {
+						resp.Text = "Повезет в другой раз."
+					}
+				} else {
+					resp.Text = "Неизвестная команда"
+					resp.TTS = "Я вас \"НЕ СОВСЕМ\" поняла"
+				}
 			}
 		}
 
