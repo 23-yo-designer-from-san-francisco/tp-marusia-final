@@ -58,9 +58,9 @@ func main() {
 					Playlist: []marusia.AudioPlaylist{
 						{
 							Stream: marusia.AudioStream{
-								Source:     "-2001940574_79940574",
+								Source:     "2000512001_456239024",
 								SourceType: "vk",
-								TrackID:    "artist2-album2-track-456",
+								TrackID:    "gspd-u-rossii-tri-puti",
 							},
 						},
 					},
