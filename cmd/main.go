@@ -57,13 +57,13 @@ func main() {
 
 	sessions := make(map[string]Session)
 	tracks := []Track{
-		{
-			name: "у россии три пути",
-			audio: map[Duration]string{
-				Two:  "2000512001_456239026",
-				Five: "2000512001_456239025",
-			},
-		},
+		// {
+		// 	name: "у россии три пути",
+		// 	audio: map[Duration]string{
+		// 		Two:  "2000512001_456239026",
+		// 		Five: "2000512001_456239025",
+		// 	},
+		// },
 		{
 			name: "dance",
 			audio: map[Duration]string{
@@ -71,11 +71,18 @@ func main() {
 				Five: "2000512001_456239029",
 			},
 		},
+		// {
+		// 	name: "do ya think im sexy",
+		// 	audio: map[Duration]string{
+		// 		Two:  "2000512001_456239028",
+		// 		Five: "2000512001_456239027",
+		// 	},
+		// },
 		{
-			name: "do ya think im sexy",
+			name: "районы кварталы",
 			audio: map[Duration]string{
-				Two:  "2000512001_456239028",
-				Five: "2000512001_456239027",
+				Two:  "2000512001_456239031",
+				Five: "2000512001_456239032",
 			},
 		},
 	}
@@ -92,7 +99,7 @@ func main() {
 			case marusia.OnStart:
 				resp.Text = "Скилл запущен"
 				resp.TTS = "Скилл запущен, жду команд"
-			case "+":
+			case "играем", "продолжить":
 				if !userSession.musicStarted {
 					rand.Seed(time.Now().Unix())
 					track := tracks[rng.Int()%len(tracks)]
@@ -105,11 +112,12 @@ func main() {
 					delete(sessions, r.Session.SessionID)
 					resp.EndSession = true
 				}
-			case "не":
+			case "нет", "не узнал", "не знаю":
 				if userSession.musicStarted && !userSession.nextLevelLoses {
 					// Тут надо инкремент, а не хардкод
 					userSession.currentLevel = Five
 					userSession.nextLevelLoses = true
+					userSession.musicStarted = true
 					sessions[r.Session.SessionID] = userSession
 					resp.Text = getAnswerString(userSession.currentLevel, userSession.currentTrack.audio[userSession.currentLevel])
 				} else {
