@@ -52,6 +52,17 @@ func main() {
 				resp.Text = `Держи пуш`
 				resp.TTS = `Отправила пуш на устройство`
 				resp.Push.PushText = "Hello, i am push"
+			case "музон":
+				player := marusia.AudioPlayer{
+					Playlist: []marusia.AudioPlaylist{
+						{
+							Stream: marusia.AudioStream{
+								TrackID: "456241990",
+							},
+						},
+					},
+				}
+				resp.AudioPlayer = &player
 			case marusia.OnInterrupt:
 				resp.Text = "Скилл закрыт"
 				resp.TTS = "Пока"
