@@ -40,10 +40,11 @@ type Track struct {
 }
 
 type Session struct {
-	currentLevel     Duration
-	currentPoints    int64
-	currentTrackName string
-	musicStarted     bool
+	currentLevel   Duration
+	currentPoints  int64
+	currentTrack   Track
+	musicStarted   bool
+	nextLevelLoses bool
 }
 
 // Навык "Угадай музло"
@@ -96,7 +97,7 @@ func main() {
 					rand.Seed(time.Now().Unix())
 					track := tracks[rng.Int()%len(tracks)]
 					fmt.Println("Selected track", track)
-					userSession.currentTrackName = track.name
+					userSession.currentTrack = track
 					userSession.musicStarted = true
 					sessions[r.Session.SessionID] = userSession
 					resp.Text = getAnswerString(userSession.currentLevel, track.audio[userSession.currentLevel])
@@ -104,10 +105,18 @@ func main() {
 					delete(sessions, r.Session.SessionID)
 					resp.EndSession = true
 				}
-			case "не знаю":
-				if userSession.musicStarted {
-
+			case "не":
+				if userSession.musicStarted && !userSession.nextLevelLoses {
+					// Тут надо инкремент, а не хардкод
+					userSession.currentLevel = Five
+					userSession.nextLevelLoses = true
+					sessions[r.Session.SessionID] = userSession
+					resp.Text = getAnswerString(userSession.currentLevel, userSession.currentTrack.audio[userSession.currentLevel])
+				} else {
+					resp.Text = "Повезет в другой раз."
 				}
+				resp.EndSession = true
+				delete(sessions, r.Session.SessionID)
 			case marusia.OnInterrupt:
 				resp.Text = "Скилл закрыт"
 				resp.TTS = "Пока"
@@ -115,7 +124,7 @@ func main() {
 			default:
 				fmt.Println("ok: ", ok, "music started: ", userSession.musicStarted)
 				if ok && userSession.musicStarted {
-					if strings.ToLower(r.Request.Command) == userSession.currentTrackName {
+					if strings.ToLower(r.Request.Command) == userSession.currentTrack.name {
 						resp.Text = "Вы молодец, угадали!"
 					} else {
 						resp.Text = "Повезет в другой раз."
