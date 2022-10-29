@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/SevereCloud/vksdk/v2/marusia"
+	"github.com/seehuhn/mt19937"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -50,13 +51,30 @@ func main() {
 	wh := marusia.NewWebhook()
 	wh.EnableDebuging()
 
+	rng := rand.New(mt19937.New())
+	rng.Seed(time.Now().UnixNano())
+
 	sessions := make(map[string]Session)
 	tracks := []Track{
 		{
-			name: "gspd у россии три пути",
+			name: "у россии три пути",
 			audio: map[Duration]string{
 				Two:  "2000512001_456239026",
 				Five: "2000512001_456239025",
+			},
+		},
+		{
+			name: "dance",
+			audio: map[Duration]string{
+				Two:  "2000512001_456239030",
+				Five: "2000512001_456239029",
+			},
+		},
+		{
+			name: "do ya think im sexy",
+			audio: map[Duration]string{
+				Two:  "2000512001_456239028",
+				Five: "2000512001_456239027",
 			},
 		},
 	}
@@ -76,7 +94,7 @@ func main() {
 			case "+":
 				if !userSession.musicStarted {
 					rand.Seed(time.Now().Unix())
-					track := tracks[rand.Intn(len(tracks))]
+					track := tracks[rng.Int()%len(tracks)]
 					fmt.Println("Selected track", track)
 					userSession.currentTrackName = track.name
 					userSession.musicStarted = true
