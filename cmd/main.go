@@ -12,6 +12,7 @@ type myPayload struct {
 	marusia.DefaultPayload
 }
 
+// Навык "Угадай музло"
 func main() {
 	wh := marusia.NewWebhook()
 	wh.EnableDebuging()
@@ -57,7 +58,9 @@ func main() {
 					Playlist: []marusia.AudioPlaylist{
 						{
 							Stream: marusia.AudioStream{
-								TrackID: "167920556_456241990_c1854364696d316722_b281b4a6fzmjjqkz0HhsMUjyNDSe4q8drIPETWjoC2BKi1OZCdcnDaOjnGKdTFxdrrg-J4XivjDGmsRSaIMAcmS-Xo0g3DttlqONOvNxXlqmtgIKmey6BrOJ01YC6xt2a6xBmQngJna_oYs663ZNY6m7LwqZ_r4wu5rTbDSoEEx7qUC8ZuQnU5Wxl2P0RFpn86ECUJniuQa_jsBdUFWj6YnrBstThXQ-x0dI2_XS_vcb8g",
+								Source:     "-2001940574_79940574",
+								SourceType: "vk",
+								TrackID:    "artist2-album2-track-456",
 							},
 						},
 					},
@@ -100,7 +103,7 @@ func main() {
 
 	http.HandleFunc("/", wh.HandleFunc)
 
-	err := http.ListenAndServe(":43225", nil)
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		return
 	}
