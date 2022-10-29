@@ -123,6 +123,7 @@ func main() {
 				resp.EndSession = true
 			default:
 				fmt.Println("ok: ", ok, "music started: ", userSession.musicStarted)
+				fmt.Println("Command: ", r.Request.Command, "Track name: ", userSession.currentTrack.name)
 				if ok && userSession.musicStarted {
 					if strings.ToLower(r.Request.Command) == userSession.currentTrack.name {
 						resp.Text = "Вы молодец, угадали!"
