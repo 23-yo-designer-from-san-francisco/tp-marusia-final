@@ -7,6 +7,10 @@ import (
 
 import "encoding/json"
 
+type Art struct {
+	URL string `json:"url"`
+}
+
 type myPayload struct {
 	Text string
 	marusia.DefaultPayload
@@ -54,13 +58,22 @@ func main() {
 				resp.TTS = `Отправила пуш на устройство`
 				resp.Push.PushText = "Hello, i am push"
 			case "музон":
+				resp.Text = "Музон запущен"
+				resp.TTS = "Включаю Музон"
 				player := marusia.AudioPlayer{
+					SeekTrack: 0,
+					SeekSecond: 0,
 					Playlist: []marusia.AudioPlaylist{
 						{
+							Meta: marusia.AudioMeta{
+								Title: "title",
+								SubTitle: "subtitle",
+								Art: Art{URL: "https://sun1-91.userapi.com/impf/wpVxuGAZV3ItESy681IpYLT9UuNt5xainEruLw/j10IeDal8cE.jpg?size=160x0&quality=90&sign=c46d43fc26c10d0623261e96cfac7f0a"},
+							},
 							Stream: marusia.AudioStream{
-								Source:     "-2001940574_79940574",
+								TrackID:    "-2001940574_79940574",
 								SourceType: "vk",
-								TrackID:    "artist2-album2-track-456",
+								Source:     "-2001940574_79940574",
 							},
 						},
 					},
