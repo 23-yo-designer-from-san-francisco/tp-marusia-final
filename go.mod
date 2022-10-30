@@ -1,4 +1,4 @@
-module main
+module guessTheSongMarusia
 
 go 1.19
 
