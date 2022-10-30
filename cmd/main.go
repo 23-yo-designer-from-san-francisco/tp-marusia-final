@@ -99,6 +99,7 @@ func main() {
 			case marusia.OnStart:
 				resp.Text = "Скилл запущен"
 				resp.TTS = "Скилл запущен, жду команд"
+
 			case "играем", "продолжить":
 				if !userSession.musicStarted {
 					rand.Seed(time.Now().Unix())
@@ -108,10 +109,12 @@ func main() {
 					userSession.musicStarted = true
 					sessions[r.Session.SessionID] = userSession
 					resp.Text = getAnswerString(userSession.currentLevel, track.audio[userSession.currentLevel])
+					fmt.Println("UserSession = ", userSession)
 				} else {
 					delete(sessions, r.Session.SessionID)
 					resp.EndSession = true
 				}
+
 			case "нет", "не узнал", "не знаю":
 				if userSession.musicStarted && !userSession.nextLevelLoses {
 					// Тут надо инкремент, а не хардкод
@@ -120,15 +123,18 @@ func main() {
 					userSession.musicStarted = true
 					sessions[r.Session.SessionID] = userSession
 					resp.Text = getAnswerString(userSession.currentLevel, userSession.currentTrack.audio[userSession.currentLevel])
+					return
 				} else {
 					resp.Text = "Повезет в другой раз."
 				}
 				resp.EndSession = true
 				delete(sessions, r.Session.SessionID)
+
 			case marusia.OnInterrupt:
 				resp.Text = "Скилл закрыт"
 				resp.TTS = "Пока"
 				resp.EndSession = true
+
 			default:
 				fmt.Println("ok: ", ok, "music started: ", userSession.musicStarted)
 				fmt.Println("Command: ", r.Request.Command, "Track name: ", userSession.currentTrack.name)
