@@ -71,9 +71,9 @@ func main() {
 								Art: Art{URL: "https://sun1-91.userapi.com/impf/wpVxuGAZV3ItESy681IpYLT9UuNt5xainEruLw/j10IeDal8cE.jpg?size=160x0&quality=90&sign=c46d43fc26c10d0623261e96cfac7f0a"},
 							},
 							Stream: marusia.AudioStream{
-								TrackID:    "-2001940574_79940574",
+								TrackID:    "SomeText",
 								SourceType: "vk",
-								Source:     "-2001940574_79940574",
+								Source:     "-2001702405_114702405",
 							},
 						},
 					},
