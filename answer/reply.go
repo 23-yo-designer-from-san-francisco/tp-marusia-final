@@ -24,7 +24,7 @@ func LosePhrase(userSession *models.Session) string {
 }
 
 func WinPhrase(userSession *models.Session) string {
-	return YouGuess + IWillSayTheAnswer + SaySongInfoString(userSession) + ToContinue + ToStop
+	return YouGuess // + IWillSayTheAnswer + SaySongInfoString(userSession) + ToContinue + ToStop
 }
 
 // Начало Игры
