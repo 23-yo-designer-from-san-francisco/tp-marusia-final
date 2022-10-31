@@ -5,6 +5,6 @@ const tracks = Array.from(document.getElementsByClassName('audio_row')).map((e) 
     const audioVkId = `${audioData[1]}_${audioData[0]}`
     const duration = audioData[5]
     return { title, artist, audioVkId, duration }
-});
+}).sort((a, b) => a.title < b.title ? -1 : a.title > b.title ? 1 : 0);
 
 JSON.stringify(tracks);
