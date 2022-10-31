@@ -7,29 +7,30 @@ import (
 
 //Phrase должны возвращать (string, string) -> resp.Text, resp.TTS
 
-//Неизвестная команда
+// Неизвестная команда
 func IDontUnderstandYouPhrase() (string, string) {
-	return UnknownCommand, UnknownCommandTTS 
+	return UnknownCommand, UnknownCommandTTS
 }
 
-//Информация о загаданной песне
+// Информация о загаданной песне
 func SaySongInfoString(userSession *models.Session) string {
-	return fmt.Sprintf("%s%s. ", ThatIs, userSession.CurrentTrack.Name)
+	return fmt.Sprintf("%s%s. ", ThatIs, userSession.CurrentTrack.Title)
 }
 
-//Если человек не смог угадать
+// Если человек не смог угадать
 func LosePhrase(userSession *models.Session) string {
-	return DontGuess + IWillSayTheAnswer + 
-			SaySongInfoString(userSession) + ToContinue + ToStop
+	return DontGuess + IWillSayTheAnswer +
+		SaySongInfoString(userSession) + ToContinue + ToStop
 }
 
 func WinPhrase(userSession *models.Session) string {
-	return YouGuess + IWillSayTheAnswer + SaySongInfoString(userSession) + ToContinue + ToStop
+	return YouGuess // + IWillSayTheAnswer + SaySongInfoString(userSession) + ToContinue + ToStop
 }
 
-//Начало Игры
+// Начало Игры
 func StartGamePhrase() (string, string) {
-	return Hello + ToStart, Hello + ToStart
+	str := fmt.Sprintf("%s %s", Hello, ToStart)
+	return str, str
 }
 
 func AlreadyPlayingPhrase() (string, string) {
