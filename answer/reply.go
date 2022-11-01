@@ -14,7 +14,7 @@ func IDontUnderstandYouPhrase() (string, string) {
 
 // Информация о загаданной песне
 func SaySongInfoString(userSession *models.Session) string {
-	return fmt.Sprintf("%s%s. ", ThatIs, userSession.CurrentTrack.Title)
+	return fmt.Sprintf("%s%s — %s. ", ThatIs, userSession.CurrentTrack.Artist, userSession.CurrentTrack.Title)
 }
 
 // Если человек не смог угадать
@@ -24,12 +24,23 @@ func LosePhrase(userSession *models.Session) string {
 }
 
 func WinPhrase(userSession *models.Session) string {
-	return YouGuess // + IWillSayTheAnswer + SaySongInfoString(userSession) + ToContinue + ToStop
+	return YouGuess + SaySongInfoString(userSession) + ToContinue + ToStop
 }
 
 // Начало Игры
 func StartGamePhrase() (string, string) {
 	str := fmt.Sprintf("%s %s", Hello, ToStart)
+	return str, str
+}
+
+// Жанры
+func ChooseGenrePhrase() (string, string) {
+	str := fmt.Sprintf("%s %s %s", ChooseGenre, AvailableGenres, ToStop)
+	return str, str
+}
+
+func ChangeGenrePhrase() (string, string) {
+	str := fmt.Sprintf("%s %s", ChangeGenre, AvailableGenres)
 	return str, str
 }
 

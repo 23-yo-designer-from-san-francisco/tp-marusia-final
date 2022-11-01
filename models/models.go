@@ -37,6 +37,11 @@ func NewSession() *Session {
 	}
 }
 
+type TracksPerGenres struct {
+	Rock []VKTrack `json:"rock"`
+	Rap  []VKTrack `json:"rap"`
+}
+
 type VKTrack struct {
 	Title     string `json:"title"`
 	Artist    string `json:"artist"`

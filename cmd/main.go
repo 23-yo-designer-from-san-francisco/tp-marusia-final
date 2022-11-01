@@ -25,15 +25,16 @@ func main() {
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
 
-	b, err := os.ReadFile(`C:\Users\winsd\tp-marusia-final\cmd\music.json`)
+	b, err := os.ReadFile(`/Users/frbgd/sources/tp/tp-marusia-final/cmd/music.json`)
 	if err != nil {
 		fmt.Print(err)
 	}
 	jsonTracks := string(b)
-	var tracks []models.VKTrack
-	if err := json.Unmarshal([]byte(jsonTracks), &tracks); err != nil {
+	var allTracks models.TracksPerGenres
+	if err := json.Unmarshal([]byte(jsonTracks), &allTracks); err != nil {
 		log.Fatalln(err.Error())
 	}
+	var currentGameTracks []models.VKTrack
 
 	sessions := make(map[string]*models.Session)
 
@@ -52,28 +53,39 @@ func main() {
 				resp.Text, resp.TTS = answer.StartGamePhrase()
 
 			case answer.Play, answer.Playem, answer.Begin:
-				if !userSession.GameStarted {
-					sessions[r.Session.SessionID] = userSession
-					resp = game.StartGame(userSession, tracks, resp, rng)
-					return resp
-				}
+				resp.Text, resp.TTS = answer.ChooseGenrePhrase()
+				return resp
 
-				resp.Text, resp.TTS = answer.AlreadyPlayingPhrase()
+			case answer.Rock:
+				currentGameTracks = allTracks.Rock
+				sessions[r.Session.SessionID] = userSession
+				resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				return resp
+
+			case answer.Rap:
+				currentGameTracks = allTracks.Rock
+				sessions[r.Session.SessionID] = userSession
+				resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				return resp
+
+			case answer.Any:
+				currentGameTracks = append(allTracks.Rap, allTracks.Rock...)
+				sessions[r.Session.SessionID] = userSession
+				resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				return resp
 
 			case answer.IDontKnow, answer.DontKnow, answer.No, answer.CantGuess, answer.ICantGuess:
 				resp = game.WrongAnswerPlay(userSession, resp)
 
 			case answer.Continue:
-				if !userSession.GameStarted {
-					// !!!!!!!!!!!!!!!!!!!! ТИРЕ, А НЕ ДЕФИС, КАВЫЧКИ «ЁЛОЧКИ»  «»
-					resp.Text = `Сначала начните игру — Скажите «начать».`
-					resp.TTS = `Сначала начните игру — Скажите «начать».`
-					return
-				}
-				resp = game.StartGame(userSession, tracks, resp, rng)
+				resp = game.StartGame(userSession, currentGameTracks, resp, rng)
 				return resp
 
 			case marusia.OnInterrupt:
+				if userSession.GameStarted {
+					resp.Text, resp.TTS = answer.ChangeGenrePhrase()
+					return resp
+				}
 				resp.Text, resp.TTS = answer.GoodbyePhrase()
 				resp.EndSession = true
 				delete(sessions, r.Session.SessionID)

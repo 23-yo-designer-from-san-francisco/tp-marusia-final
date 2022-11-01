@@ -20,15 +20,25 @@ const (
 
 // Для начала и конца игры
 const (
-	Hello   string = `Приветствую вас на игре «Угадай мелодию». Я Маруся, буду сегодня вашим ведущим.`
-	GoodBye string = `Пока. Отлично поиграли`
+	Hello   string = `Приветствую вас на игре «Угадай мелодию». Я Маруся, буду сегодня вашим ведущим. `
+	GoodBye string = `Пока. Отлично поиграли! `
+)
+
+// Для выбора жанра
+const (
+	ChooseGenre     string = "Вы можете выбрать жанр музыки. "
+	ChangeGenre     string = "Вы можете поменять жанр музыки. "
+	AvailableGenres string = "Сейчас доступны жанры: «Рок» и «Рэп». Либо скажите — «Любой жанр». "
+	Rock            string = "рок"
+	Rap             string = "рэп"
+	Any             string = "любой жанр"
 )
 
 // Для не тех фраз в определённых местах
 const (
-	AlreadyPlaying    = "Вы уже играете, забыли?"
-	UnknownCommand    = "Я вас не совсем поняла"
-	UnknownCommandTTS = "Я вас «НЕ СОВСЕМ» поняла"
+	AlreadyPlaying    = "Вы уже играете, забыли? "
+	UnknownCommand    = "Я вас не совсем поняла. "
+	UnknownCommandTTS = "Я вас «НЕ СОВСЕМ» поняла. "
 )
 
 // Фразы для помощи пользователем с управлением
@@ -40,12 +50,12 @@ const (
 
 // Для угадываний
 const (
-	DontGuess string = "Эх, вы не ^уга`дали^."
-	YouGuess  string = "Вы молодец! ^Уга`дали^! <speaker audio=marusia-sounds/game-win-1>"
+	DontGuess string = "Эх, вы не ^уга`дали^. "
+	YouGuess  string = "Вы молодец! ^Уга`дали^! <speaker audio=marusia-sounds/game-win-1> "
 )
 
 // Для ответов по песням
 const (
-	IWillSayTheAnswer = "Сейчас скажу ответ."
+	IWillSayTheAnswer = "Сейчас скажу ответ. "
 	ThatIs            = "Это же: "
 )
