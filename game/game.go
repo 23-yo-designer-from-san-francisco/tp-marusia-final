@@ -10,32 +10,6 @@ import (
 	"github.com/SevereCloud/vksdk/v2/marusia"
 )
 
-func GetAnswerString(artistMatch bool, titleMatch bool, time models.Duration, audioVkId string) (string, string) {
-	var s string
-	fmt.Println("Секунды", time)
-	switch time {
-	case 2:
-		s = "две секунды"
-	case 5:
-		s = "следующие три секунды"
-	case 10:
-		s = "следующие пять секунд"
-	}
-
-	preWinPhrase := ""
-	if artistMatch {
-		preWinPhrase = "Вы угадали исполнителя! А сможете название? "
-	} else if titleMatch {
-		preWinPhrase = "Вы угадали название! А сможете исполнителя? "
-	}
-
-	fmt.Println("getAnswerString: ", audioVkId, "Current level: ", time)
-	fmt.Println(audioVkId)
-	textString := fmt.Sprintf("%sИграю %s трека. Угадаете?", preWinPhrase, s)
-	ttsString := fmt.Sprintf("%s <speaker audio_vk_id=%s >", textString, audioVkId)
-	return textString, ttsString
-}
-
 func StartGame(userSession *models.Session, tracks []models.VKTrack, resp marusia.Response, rng *rand.Rand) marusia.Response {
 	userSession.CurrentTrack = ChooseTrack(userSession, tracks, rng)
 	fmt.Println("Selected track", userSession.CurrentTrack)
@@ -45,6 +19,7 @@ func StartGame(userSession *models.Session, tracks []models.VKTrack, resp marusi
 	userSession.NextLevelLoses = false
 	userSession.ArtistMatch = false
 	userSession.TitleMatch = false
+	userSession.GenreTrackCounter += 1
 	resp.Text, resp.TTS = getRespTextFromLevel(userSession)
 	return resp
 }
@@ -65,15 +40,32 @@ func ChooseTrack(userSession *models.Session, tracks []models.VKTrack, rng *rand
 }
 
 func getRespTextFromLevel(userSession *models.Session) (string, string) {
-	var text, tts string
+	var s, text, tts, preWin, audioVkId string
+	fmt.Println("Секунды", userSession.CurrentLevel)
 	switch userSession.CurrentLevel {
 	case models.Two:
-		text, tts = GetAnswerString(userSession.ArtistMatch, userSession.TitleMatch, userSession.CurrentLevel, userSession.CurrentTrack.Duration2)
+		s = "две секунды"
+		audioVkId = userSession.CurrentTrack.Duration2
 	case models.Five:
-		text, tts = GetAnswerString(userSession.ArtistMatch, userSession.TitleMatch, userSession.CurrentLevel, userSession.CurrentTrack.Duration3)
+		s = "следующие три секунды"
+		audioVkId = userSession.CurrentTrack.Duration3
 	case models.Ten:
-		text, tts = GetAnswerString(userSession.ArtistMatch, userSession.TitleMatch, userSession.CurrentLevel, userSession.CurrentTrack.Duration5)
+		s = "следующие пять секунд"
+		audioVkId = userSession.CurrentTrack.Duration5
 	}
+
+	if userSession.ArtistMatch {
+		preWin = "Вы угадали исполнителя! А ^см`ожете^ название? "
+	} else if userSession.TitleMatch {
+		preWin = "Вы угадали название! А ^см`ожете^ исполнителя? "
+	} else if userSession.GenreTrackCounter == 1 && userSession.CurrentLevel == models.Two {
+		preWin = fmt.Sprintf("Вы выбрали жанр «%s». Чтобы поменять, скажите «сменить жанр». ", userSession.CurrentGenre)
+	}
+
+	fmt.Println("getAnswerString: ", audioVkId, "Current level: ", userSession.CurrentLevel)
+	fmt.Println(audioVkId)
+	text = fmt.Sprintf("%sИграю %s трека. Угадаете?", preWin, s)
+	tts = fmt.Sprintf("%s <speaker audio_vk_id=%s >", text, audioVkId)
 	return text, tts
 }
 

@@ -7,18 +7,20 @@ const (
 	AgainE                = "еще раз"
 	Again                 = "ещё раз"
 	ChangeGenre           = "поменять жанр"
+	ChangeGenre_          = "сменить жанр"
 	AnotherGenre          = "другой жанр"
 )
 
 // Для выбора жанра
 const (
-	ChooseGenre     string = "Вы можете выбрать жанр музыки. Назовите жанр или скажите «любой». Я могу перечислить доступные."
+	ChooseGenre     string = "Вы можете выбрать жанр музыки. Назовите жанр или скажите «Любой». Я могу перечислить доступные — только скажите!"
 	List            string = "перечисли"
 	Available       string = "доступн"
+	LetsGo          string = "давай"
 	AvailableGenres string = "Сейчас доступны жанры: «Рок» и «Не Рок». Либо скажите — «Любой жанр»."
-	Rock            string = "рок"
-	NotRock         string = "не рок"
-	Any             string = "любой"
+	Rock            string = "Рок"
+	NotRock         string = "Не рок"
+	Any             string = "Любой"
 )
 
 // Для не тех фраз в определённых местах

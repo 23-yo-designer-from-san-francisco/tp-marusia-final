@@ -24,15 +24,17 @@ type Track struct {
 }
 
 type Session struct {
-	CurrentLevel   Duration
-	CurrentPoints  int64
-	CurrentTrack   VKTrack
-	GameStatus     GameStatus
-	MusicStarted   bool
-	NextLevelLoses bool
-	TitleMatch     bool
-	ArtistMatch    bool
-	PlayedTracks   map[int]bool
+	CurrentLevel      Duration
+	CurrentPoints     int64
+	CurrentTrack      VKTrack
+	GameStatus        GameStatus
+	MusicStarted      bool
+	NextLevelLoses    bool
+	TitleMatch        bool
+	ArtistMatch       bool
+	PlayedTracks      map[int]bool
+	CurrentGenre      string
+	GenreTrackCounter int
 }
 
 func NewSession() *Session {

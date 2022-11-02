@@ -74,65 +74,86 @@ func main() {
 			} else if userSession.GameStatus == models.ChoosingGenre || userSession.GameStatus == models.ListingGenres {
 				// логика после предложения выбрать жанр|
 				if strings.Contains(r.Request.Command, answer.AgainE) || strings.Contains(r.Request.Command, answer.DontUnderstand) || strings.Contains(r.Request.Command, answer.Again) {
+					// попросили повторить
 					if userSession.GameStatus == models.ChoosingGenre {
 						resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
 					} else if userSession.GameStatus == models.ListingGenres {
 						resp.Text, resp.TTS = answer.AvailableGenres, answer.AvailableGenres
 					}
-				} else if strings.Contains(r.Request.Command, answer.List) || strings.Contains(r.Request.Command, answer.Available) {
+				} else if strings.Contains(r.Request.Command, answer.List) || strings.Contains(r.Request.Command, answer.LetsGo) || strings.Contains(r.Request.Command, answer.Available) {
+					// попросили перечислить
 					userSession.GameStatus = models.ListingGenres
 					resp.Text, resp.TTS = answer.AvailableGenres, answer.AvailableGenres
-				} else if strings.Contains(r.Request.Command, answer.NotRock) {
+				} else if strings.Contains(r.Request.Command, strings.ToLower(answer.NotRock)) {
+					// не рок
 					// TODO вставить фразу о запуске не рока
 					currentGameTracks = allTracks.NotRock
 					sessions[r.Session.SessionID] = userSession
+					userSession.GenreTrackCounter = 0
+					userSession.CurrentGenre = answer.NotRock
 					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
-				} else if strings.Contains(r.Request.Command, answer.Rock) {
+				} else if strings.Contains(r.Request.Command, strings.ToLower(answer.Rock)) {
+					// рок
 					// TODO вставить фразу о запуске рока
 					currentGameTracks = allTracks.Rock
 					sessions[r.Session.SessionID] = userSession
+					userSession.GenreTrackCounter = 0
+					userSession.CurrentGenre = answer.Rock
 					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
-				} else if strings.Contains(r.Request.Command, answer.Any) {
+				} else if strings.Contains(r.Request.Command, strings.ToLower(answer.Any)) {
+					// любой
 					// TODO вставить фразу о запуске любого
 					currentGameTracks = append(allTracks.NotRock, allTracks.Rock...)
 					sessions[r.Session.SessionID] = userSession
+					userSession.GenreTrackCounter = 0
+					userSession.CurrentGenre = answer.Any
 					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
 				} else {
+					// непонел
 					// TODO здесь надо находить жанр, похожий на названный
 					resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
 				}
 			} else if userSession.GameStatus == models.Playing {
 				// логика во время игры
-				if strings.Contains(r.Request.Command, answer.ChangeGenre) || strings.Contains(r.Request.Command, answer.AnotherGenre) {
+				if strings.Contains(r.Request.Command, answer.ChangeGenre) || strings.Contains(r.Request.Command, answer.ChangeGenre_) || strings.Contains(r.Request.Command, answer.AnotherGenre) {
+					// попросили поменять жанр
 					userSession.GameStatus = models.ChoosingGenre
 					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
 				} else if userSession.MusicStarted {
+					// после первого прослушивания
 					if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) && strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
+						// если сразу угадал исполнителя и название
 						resp.Text, resp.TTS = answer.WinPhrase(userSession)
 						userSession.MusicStarted = false
 					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) {
+						// если угадал название
 						userSession.TitleMatch = true
 						if userSession.ArtistMatch {
+							// если до этого угадал исполнителя
 							resp.Text, resp.TTS = answer.WinPhrase(userSession)
 							userSession.MusicStarted = false
 						} else {
 							resp = game.WrongAnswerPlay(userSession, resp)
 						}
 					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
+						// если угадал исполнителя
 						userSession.ArtistMatch = true
 						if userSession.TitleMatch {
+							// если до этого угадал название
 							resp.Text, resp.TTS = answer.WinPhrase(userSession)
 							userSession.MusicStarted = false
 						} else {
 							resp = game.WrongAnswerPlay(userSession, resp)
 						}
 					} else if userSession.NextLevelLoses {
+						// если все попытки провалились
 						userSession.MusicStarted = false
 						resp.Text, resp.TTS = answer.LosePhrase(userSession)
 					} else {
 						resp = game.WrongAnswerPlay(userSession, resp)
 					}
 				} else {
+					// перед первым или после последнего прослушивания
 					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
 				}
 			} else {
