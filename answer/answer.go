@@ -1,51 +1,41 @@
 package answer
 
-// Управляющие фразы
 const (
-	Playem   string = "играем"
-	Play     string = "играть"
-	Continue string = "продолжить"
-	Greeting string = "приветствие"
-	Begin    string = "начать"
-)
-
-// Ответы: Не знаю
-const (
-	IDontKnow  string = "я не знаю"
-	DontKnow   string = "не знаю"
-	No         string = "нет"
-	CantGuess         = "не могу угадать"
-	ICantGuess        = "я не могу угадать"
-)
-
-// Для начала и конца игры
-const (
-	Hello   string = `Приветствую вас на игре «Угадай мелодию». Я Маруся, буду сегодня вашим ведущим. `
-	GoodBye string = `Пока. Отлично поиграли! `
+	Continue       string = "продолжить" // TODO нужно ли? сейчас итак продолжает
+	Repeat                = "повтори"    // TODO почему-то не работает
+	DontUnderstand        = "не понял"
+	AgainE                = "еще раз"
+	Again                 = "ещё раз"
+	ChangeGenre           = "поменять жанр"
+	AnotherGenre          = "другой жанр"
 )
 
 // Для выбора жанра
 const (
-	ChooseGenre     string = "Вы можете выбрать жанр музыки. "
-	ChangeGenre     string = "Вы можете поменять жанр музыки. "
-	AvailableGenres string = "Сейчас доступны жанры: «Рок» и «Рэп». Либо скажите — «Любой жанр». "
+	ChooseGenre     string = "Вы можете выбрать жанр музыки. Назовите жанр или скажите «любой». Я могу перечислить доступные."
+	List            string = "перечисли"
+	Available       string = "доступн"
+	AvailableGenres string = "Сейчас доступны жанры: «Рок» и «Не Рок». Либо скажите — «Любой жанр»."
 	Rock            string = "рок"
-	Rap             string = "рэп"
-	Any             string = "любой жанр"
+	NotRock         string = "не рок"
+	Any             string = "любой"
 )
 
 // Для не тех фраз в определённых местах
 const (
-	AlreadyPlaying    = "Вы уже играете, забыли? "
+	AlreadyPlaying    = "Вы уже играете, забыли? " // TODO надо подумать, как это подружить с новыми состояниями
 	UnknownCommand    = "Я вас не совсем поняла. "
 	UnknownCommandTTS = "Я вас «НЕ СОВСЕМ» поняла. "
 )
 
 // Фразы для помощи пользователем с управлением
 const (
-	ToStart    string = `Чтобы начать, скажите «Играем». `
-	ToContinue string = `Чтобы продолжить игру, скажите «Продолжить». `
-	ToStop     string = `Чтобы закончить игру, скажите «Стоп». `
+	Hello      string = "Приветствую вас на игре «Угадай мелодию». Я Маруся, буду сегодня вашим ведущим."
+	ToStart    string = "Чтобы начать, скажите «Играем»."
+	ToStop     string = "Чтобы закончить игру, скажите «Стоп»."
+	ToRepeat   string = "Ну и можете попросить меня повторить последнюю команду."
+	ToContinue string = "Чтобы продолжить игру, скажите «Продолжить»."
+	GoodBye    string = "Пока. Отлично поиграли!"
 )
 
 // Для угадываний

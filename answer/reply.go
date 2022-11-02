@@ -23,31 +23,13 @@ func LosePhrase(userSession *models.Session) string {
 		SaySongInfoString(userSession) + ToContinue + ToStop
 }
 
-func WinPhrase(userSession *models.Session) string {
-	return YouGuess + SaySongInfoString(userSession) + ToContinue + ToStop
+func WinPhrase(userSession *models.Session) (string, string) {
+	str := fmt.Sprintf("%s %s %s %s", YouGuess, SaySongInfoString(userSession), ToContinue, ToStop)
+	return str, str
 }
 
 // Начало Игры
 func StartGamePhrase() (string, string) {
-	str := fmt.Sprintf("%s %s", Hello, ToStart)
+	str := fmt.Sprintf("%s %s %s %s", Hello, ToStart, ToStop, ToRepeat)
 	return str, str
-}
-
-// Жанры
-func ChooseGenrePhrase() (string, string) {
-	str := fmt.Sprintf("%s %s %s", ChooseGenre, AvailableGenres, ToStop)
-	return str, str
-}
-
-func ChangeGenrePhrase() (string, string) {
-	str := fmt.Sprintf("%s %s", ChangeGenre, AvailableGenres)
-	return str, str
-}
-
-func AlreadyPlayingPhrase() (string, string) {
-	return AlreadyPlaying, AlreadyPlaying
-}
-
-func GoodbyePhrase() (string, string) {
-	return GoodBye, GoodBye
 }

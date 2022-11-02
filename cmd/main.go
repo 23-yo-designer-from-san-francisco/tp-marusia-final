@@ -43,79 +43,88 @@ func main() {
 		if !ok {
 			userSession = models.NewSession()
 			sessions[r.Session.SessionID] = userSession
+			resp.Text, resp.TTS = answer.StartGamePhrase()
+			return resp
 		}
 
 		switch r.Request.Type {
 		case marusia.SimpleUtterance:
-			switch r.Request.Command {
+			fmt.Println("ok: ", ok, "music started: ", userSession.MusicStarted)
+			fmt.Println("Command: ", r.Request.Command, "Track name: ", userSession.CurrentTrack.Title)
 
-			case marusia.OnStart, answer.Greeting:
-				resp.Text, resp.TTS = answer.StartGamePhrase()
-
-			case answer.Play, answer.Playem, answer.Begin:
-				resp.Text, resp.TTS = answer.ChooseGenrePhrase()
-				return resp
-
-			case answer.Rock:
-				currentGameTracks = allTracks.Rock
-				sessions[r.Session.SessionID] = userSession
-				resp = game.StartGame(userSession, currentGameTracks, resp, rng)
-				return resp
-
-			case answer.Rap:
-				currentGameTracks = allTracks.Rock
-				sessions[r.Session.SessionID] = userSession
-				resp = game.StartGame(userSession, currentGameTracks, resp, rng)
-				return resp
-
-			case answer.Any:
-				currentGameTracks = append(allTracks.Rap, allTracks.Rock...)
-				sessions[r.Session.SessionID] = userSession
-				resp = game.StartGame(userSession, currentGameTracks, resp, rng)
-				return resp
-
-			case answer.IDontKnow, answer.DontKnow, answer.No, answer.CantGuess, answer.ICantGuess:
-				resp = game.WrongAnswerPlay(userSession, resp)
-
-			case answer.Continue:
-				resp = game.StartGame(userSession, currentGameTracks, resp, rng)
-				return resp
-
-			case marusia.OnInterrupt:
-				if userSession.GameStarted {
-					resp.Text, resp.TTS = answer.ChangeGenrePhrase()
-					return resp
-				}
-				resp.Text, resp.TTS = answer.GoodbyePhrase()
+			// выход из игры в любом месте
+			if r.Request.Command == marusia.OnInterrupt {
+				resp.Text, resp.TTS = answer.GoodBye, answer.GoodBye
 				resp.EndSession = true
 				delete(sessions, r.Session.SessionID)
+				return resp
+			}
 
-			default:
-				fmt.Println("ok: ", ok, "music started: ", userSession.MusicStarted)
-				fmt.Println("Command: ", r.Request.Command, "Track name: ", userSession.CurrentTrack.Title)
+			// TODO вместо strings.Contains проверять наличие в токенах
 
-				if ok && userSession.MusicStarted {
-					if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) {
-						resp.Text = answer.WinPhrase(userSession)
-						return
-					}
-
-					if userSession.NextLevelLoses {
-						resultString := answer.LosePhrase(userSession)
-						resp.Text, resp.TTS = resultString, resultString
-						return
-					}
-
-					resp = game.WrongAnswerPlay(userSession, resp)
-					return
-
+			if userSession.GameStatus == models.New {
+				// логика после приветствия
+				if strings.Contains(r.Request.Command, answer.AgainE) || strings.Contains(r.Request.Command, answer.DontUnderstand) || strings.Contains(r.Request.Command, answer.Again) {
+					// TODO хорошо бы состояние сделать "классом" со своей стандартной фразой, и запускать повторение прям из логики класса состояния (повторение будет перезапускать стандартную фразу состояния)
+					resp.Text, resp.TTS = answer.StartGamePhrase()
 				} else {
-					resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
-					return
+					userSession.GameStatus = models.ChoosingGenre
+					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
 				}
+			} else if userSession.GameStatus == models.ChoosingGenre || userSession.GameStatus == models.ListingGenres {
+				// логика после предложения выбрать жанр|
+				if strings.Contains(r.Request.Command, answer.AgainE) || strings.Contains(r.Request.Command, answer.DontUnderstand) || strings.Contains(r.Request.Command, answer.Again) {
+					if userSession.GameStatus == models.ChoosingGenre {
+						resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
+					} else if userSession.GameStatus == models.ListingGenres {
+						resp.Text, resp.TTS = answer.AvailableGenres, answer.AvailableGenres
+					}
+				} else if strings.Contains(r.Request.Command, answer.List) || strings.Contains(r.Request.Command, answer.Available) {
+					userSession.GameStatus = models.ListingGenres
+					resp.Text, resp.TTS = answer.AvailableGenres, answer.AvailableGenres
+				} else if strings.Contains(r.Request.Command, answer.NotRock) {
+					// TODO вставить фразу о запуске не рока
+					currentGameTracks = allTracks.NotRock
+					sessions[r.Session.SessionID] = userSession
+					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				} else if strings.Contains(r.Request.Command, answer.Rock) {
+					// TODO вставить фразу о запуске рока
+					currentGameTracks = allTracks.Rock
+					sessions[r.Session.SessionID] = userSession
+					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				} else if strings.Contains(r.Request.Command, answer.Any) {
+					// TODO вставить фразу о запуске любого
+					currentGameTracks = append(allTracks.NotRock, allTracks.Rock...)
+					sessions[r.Session.SessionID] = userSession
+					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				} else {
+					// TODO здесь надо находить жанр, похожий на названный
+					resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
+				}
+			} else if userSession.GameStatus == models.Playing {
+				// логика во время игры
+				if strings.Contains(r.Request.Command, answer.ChangeGenre) || strings.Contains(r.Request.Command, answer.AnotherGenre) {
+					userSession.GameStatus = models.ChoosingGenre
+					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
+				} else if userSession.MusicStarted {
+					if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) {
+						resp.Text, resp.TTS = answer.WinPhrase(userSession)
+						userSession.MusicStarted = false
+					} else if userSession.NextLevelLoses {
+						resultString := answer.LosePhrase(userSession)
+						userSession.MusicStarted = false
+						resp.Text, resp.TTS = resultString, resultString
+					} else {
+						resp = game.WrongAnswerPlay(userSession, resp)
+					}
+				} else {
+					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				}
+			} else {
+				resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
 			}
 		}
-		return
+		return resp
 	})
 
 	http.HandleFunc("/", mywh.HandleFunc)

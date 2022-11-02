@@ -31,7 +31,7 @@ func GetAnswerString(time models.Duration, audioVkId string) (string, string) {
 func StartGame(userSession *models.Session, tracks []models.VKTrack, resp marusia.Response, rng *rand.Rand) marusia.Response {
 	userSession.CurrentTrack = ChooseTrack(userSession, tracks, rng)
 	fmt.Println("Selected track", userSession.CurrentTrack)
-	userSession.GameStarted = true
+	userSession.GameStatus = models.Playing
 	userSession.MusicStarted = true
 	userSession.CurrentLevel = models.Two
 	userSession.NextLevelLoses = false
