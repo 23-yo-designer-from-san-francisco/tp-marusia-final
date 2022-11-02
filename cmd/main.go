@@ -107,13 +107,28 @@ func main() {
 					userSession.GameStatus = models.ChoosingGenre
 					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
 				} else if userSession.MusicStarted {
-					if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) {
+					if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) && strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
 						resp.Text, resp.TTS = answer.WinPhrase(userSession)
 						userSession.MusicStarted = false
+					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) {
+						userSession.TitleMatch = true
+						if userSession.ArtistMatch {
+							resp.Text, resp.TTS = answer.WinPhrase(userSession)
+							userSession.MusicStarted = false
+						} else {
+							resp = game.WrongAnswerPlay(userSession, resp)
+						}
+					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
+						userSession.ArtistMatch = true
+						if userSession.TitleMatch {
+							resp.Text, resp.TTS = answer.WinPhrase(userSession)
+							userSession.MusicStarted = false
+						} else {
+							resp = game.WrongAnswerPlay(userSession, resp)
+						}
 					} else if userSession.NextLevelLoses {
-						resultString := answer.LosePhrase(userSession)
 						userSession.MusicStarted = false
-						resp.Text, resp.TTS = resultString, resultString
+						resp.Text, resp.TTS = answer.LosePhrase(userSession)
 					} else {
 						resp = game.WrongAnswerPlay(userSession, resp)
 					}

@@ -30,18 +30,18 @@ const (
 
 // Фразы для помощи пользователем с управлением
 const (
-	Hello      string = "Приветствую вас на игре «Угадай мелодию». Я Маруся, буду сегодня вашим ведущим."
+	Hello      string = "Приветствую вас на игре «Угадай мелодию»."
 	ToStart    string = "Чтобы начать, скажите «Играем»."
 	ToStop     string = "Чтобы закончить игру, скажите «Стоп»."
-	ToRepeat   string = "Ну и можете попросить меня повторить последнюю команду."
 	ToContinue string = "Чтобы продолжить игру, скажите «Продолжить»."
 	GoodBye    string = "Пока. Отлично поиграли!"
 )
 
 // Для угадываний
 const (
-	DontGuess string = "Эх, вы не ^уга`дали^. "
-	YouGuess  string = "Вы молодец! ^Уга`дали^! <speaker audio=marusia-sounds/game-win-1> "
+	DontGuess    string = "Эх, вы не ^уга`дали^."
+	YouGuessText string = "Вы молодец! Угадали!"
+	YouGuessTTS  string = "Вы молодец! ^Уга`дали^! <speaker audio=marusia-sounds/game-win-1>"
 )
 
 // Для ответов по песням

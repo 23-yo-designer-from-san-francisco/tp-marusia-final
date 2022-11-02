@@ -10,7 +10,7 @@ import (
 	"github.com/SevereCloud/vksdk/v2/marusia"
 )
 
-func GetAnswerString(time models.Duration, audioVkId string) (string, string) {
+func GetAnswerString(artistMatch bool, titleMatch bool, time models.Duration, audioVkId string) (string, string) {
 	var s string
 	fmt.Println("Секунды", time)
 	switch time {
@@ -22,10 +22,18 @@ func GetAnswerString(time models.Duration, audioVkId string) (string, string) {
 		s = "следующие пять секунд"
 	}
 
+	preWinPhrase := ""
+	if artistMatch {
+		preWinPhrase = "Вы угадали исполнителя! А сможете название? "
+	} else if titleMatch {
+		preWinPhrase = "Вы угадали название! А сможете исполнителя? "
+	}
+
 	fmt.Println("getAnswerString: ", audioVkId, "Current level: ", time)
 	fmt.Println(audioVkId)
-	resultString := fmt.Sprintf("Играю %s трека. Угадаете? <speaker audio_vk_id=%s >", s, audioVkId)
-	return resultString, resultString
+	textString := fmt.Sprintf("%sИграю %s трека. Угадаете?", preWinPhrase, s)
+	ttsString := fmt.Sprintf("%s <speaker audio_vk_id=%s >", textString, audioVkId)
+	return textString, ttsString
 }
 
 func StartGame(userSession *models.Session, tracks []models.VKTrack, resp marusia.Response, rng *rand.Rand) marusia.Response {
@@ -35,6 +43,8 @@ func StartGame(userSession *models.Session, tracks []models.VKTrack, resp marusi
 	userSession.MusicStarted = true
 	userSession.CurrentLevel = models.Two
 	userSession.NextLevelLoses = false
+	userSession.ArtistMatch = false
+	userSession.TitleMatch = false
 	resp.Text, resp.TTS = getRespTextFromLevel(userSession)
 	return resp
 }
@@ -58,11 +68,11 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 	var text, tts string
 	switch userSession.CurrentLevel {
 	case models.Two:
-		text, tts = GetAnswerString(userSession.CurrentLevel, userSession.CurrentTrack.Duration2)
+		text, tts = GetAnswerString(userSession.ArtistMatch, userSession.TitleMatch, userSession.CurrentLevel, userSession.CurrentTrack.Duration2)
 	case models.Five:
-		text, tts = GetAnswerString(userSession.CurrentLevel, userSession.CurrentTrack.Duration3)
+		text, tts = GetAnswerString(userSession.ArtistMatch, userSession.TitleMatch, userSession.CurrentLevel, userSession.CurrentTrack.Duration3)
 	case models.Ten:
-		text, tts = GetAnswerString(userSession.CurrentLevel, userSession.CurrentTrack.Duration5)
+		text, tts = GetAnswerString(userSession.ArtistMatch, userSession.TitleMatch, userSession.CurrentLevel, userSession.CurrentTrack.Duration5)
 	}
 	return text, tts
 }

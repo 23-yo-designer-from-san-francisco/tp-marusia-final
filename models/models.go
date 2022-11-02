@@ -30,6 +30,8 @@ type Session struct {
 	GameStatus     GameStatus
 	MusicStarted   bool
 	NextLevelLoses bool
+	TitleMatch     bool
+	ArtistMatch    bool
 	PlayedTracks   map[int]bool
 }
 
