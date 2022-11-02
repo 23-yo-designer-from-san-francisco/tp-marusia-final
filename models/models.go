@@ -35,6 +35,7 @@ type Session struct {
 	PlayedTracks      map[int]bool
 	CurrentGenre      string
 	GenreTrackCounter int
+	Fails             int
 }
 
 func NewSession() *Session {

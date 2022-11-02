@@ -14,13 +14,21 @@ func IDontUnderstandYouPhrase() (string, string) {
 
 // Информация о загаданной песне
 func SaySongInfoString(userSession *models.Session) string {
-	return fmt.Sprintf("%s%s — %s. ", ThatIs, userSession.CurrentTrack.Artist, userSession.CurrentTrack.Title)
+	return fmt.Sprintf("%s %s — %s.", ThatIs, userSession.CurrentTrack.Artist, userSession.CurrentTrack.Title)
 }
 
 // Если человек не смог угадать
 func LosePhrase(userSession *models.Session) (string, string) {
-	str := fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
-		SaySongInfoString(userSession), ToContinue, ToStop)
+	var str string
+	userSession.Fails += 1
+	if userSession.Fails >= 3 {
+		str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
+			SaySongInfoString(userSession), ToContinue, GenreNotify)
+	} else {
+		str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
+			SaySongInfoString(userSession), ToContinue, ToStop)
+	}
+
 	return str, str
 }
 

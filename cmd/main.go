@@ -121,7 +121,11 @@ func main() {
 					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
 				} else if userSession.MusicStarted {
 					// после первого прослушивания
-					if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) && strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
+					if strings.Contains(r.Request.Command, answer.Next) || strings.Contains(r.Request.Command, answer.GiveUp) {
+						// игрок сдается
+						userSession.MusicStarted = false
+						resp.Text, resp.TTS = answer.LosePhrase(userSession)
+					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) && strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
 						// если сразу угадал исполнителя и название
 						resp.Text, resp.TTS = answer.WinPhrase(userSession)
 						userSession.MusicStarted = false
