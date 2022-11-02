@@ -17,9 +17,9 @@ func GetAnswerString(time models.Duration, audioVkId string) (string, string) {
 	case 2:
 		s = "две секунды"
 	case 5:
-		s = "пять секунд"
+		s = "следующие три секунды"
 	case 10:
-		s = "десять секунд"
+		s = "следующие пять секунд"
 	}
 
 	fmt.Println("getAnswerString: ", audioVkId, "Current level: ", time)
