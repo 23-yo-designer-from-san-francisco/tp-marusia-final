@@ -1,122 +1,175 @@
 package main
 
 import (
-	"github.com/SevereCloud/vksdk/v2/marusia"
+	"encoding/json"
+	"fmt"
+	"github.com/seehuhn/mt19937"
+	"guessTheSongMarusia/answer"
+	"guessTheSongMarusia/game"
+	"guessTheSongMarusia/models"
+	"log"
+	"math/rand"
 	"net/http"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/SevereCloud/vksdk/v2/marusia"
 )
-
-import "encoding/json"
-
-type Art struct {
-	URL string `json:"url"`
-}
-
-type myPayload struct {
-	Text string
-	marusia.DefaultPayload
-}
 
 // Навык "Угадай музло"
 func main() {
-	wh := marusia.NewWebhook()
-	wh.EnableDebuging()
+	mywh := marusia.NewWebhook()
+	mywh.EnableDebuging()
 
-	wh.OnEvent(func(r marusia.Request) (resp marusia.Response) {
-		switch r.Request.Type {
-		case marusia.SimpleUtterance:
-			switch r.Request.Command {
-			case marusia.OnStart:
-				resp.Text = "Скилл запущен"
-				resp.TTS = "Скилл запущен, жду команд"
-			case "картинка":
-				resp.Card = marusia.NewBigImage(
-					"Заголовок",
-					"Описание",
-					457239017,
-				)
-			case "картинки":
-				resp.Card = marusia.NewImageList(
-					457239017,
-					457239018,
-				)
-			case "кнопки":
-				resp.Text = "Держи кнопки"
-				resp.TTS = "Жми на кнопки"
-				resp.AddURL("ссылка", "https://vk.com")
-				resp.AddButton("подсказка без нагрузки", nil)
-				resp.AddButton("подсказка с нагрузкой", myPayload{
-					Text: "test",
-				})
-			case "ссылка":
-				resp.Text = marusia.CreateDeepLink(
-					"e7a7d540-3928-4f11-87bf-a0de1244c096",
-					map[string]string{"Text": "нагрузка из ссылки"},
-				)
-				resp.TTS = "Держи диплинк"
-			case "пуш":
-				resp.Text = `Держи пуш`
-				resp.TTS = `Отправила пуш на устройство`
-				resp.Push.PushText = "Hello, i am push"
-			case "музон":
-				resp.Text = "Музон запущен"
-				resp.TTS = "Включаю Музон"
-				player := marusia.AudioPlayer{
-					SeekTrack: 0,
-					SeekSecond: 0,
-					Playlist: []marusia.AudioPlaylist{
-						{
-							Meta: marusia.AudioMeta{
-								Title: "title",
-								SubTitle: "subtitle",
-								Art: Art{URL: "https://sun1-91.userapi.com/impf/wpVxuGAZV3ItESy681IpYLT9UuNt5xainEruLw/j10IeDal8cE.jpg?size=160x0&quality=90&sign=c46d43fc26c10d0623261e96cfac7f0a"},
-							},
-							Stream: marusia.AudioStream{
-								TrackID:    "SomeText",
-								SourceType: "vk",
-								Source:     "-2001702405_114702405",
-							},
-						},
-					},
-				}
-				resp.AudioPlayer = &player
-			case marusia.OnInterrupt:
-				resp.Text = "Скилл закрыт"
-				resp.TTS = "Пока"
-				resp.EndSession = true
-			default:
-				resp.Text = "Неизвестная команда"
-				resp.TTS = "Я вас не поняла"
-			}
-		case marusia.ButtonPressed:
-			var p myPayload
+	rng := rand.New(mt19937.New())
+	rng.Seed(time.Now().UnixNano())
 
-			err := json.Unmarshal(r.Request.Payload, &p)
-			if err != nil {
-				resp.Text = "Что-то пошло не так"
-				return
-			}
+	b, err := os.ReadFile(`/Users/frbgd/sources/tp/tp-marusia-final/cmd/music.json`)
+	if err != nil {
+		fmt.Print(err)
+	}
+	jsonTracks := string(b)
+	var allTracks models.TracksPerGenres
+	if err := json.Unmarshal([]byte(jsonTracks), &allTracks); err != nil {
+		log.Fatalln(err.Error())
+	}
+	var currentGameTracks []models.VKTrack
 
-			resp.Text = "Кнопка нажата. Полезная нагрузка: " + p.Text
-			resp.TTS = "Вы нажали на кнопку"
-		case marusia.DeepLink:
-			var p myPayload
+	sessions := make(map[string]*models.Session)
 
-			err := json.Unmarshal(r.Request.Payload, &p)
-			if err != nil {
-				resp.Text = "Что-то пошло не так"
-				return
-			}
-
-			resp.Text = "Специальная ссылка. Полезная нагрузка: " + p.Text
-			resp.TTS = "Вы перешли по ссылке"
+	mywh.OnEvent(func(r marusia.Request) (resp marusia.Response) {
+		userSession, ok := sessions[r.Session.SessionID]
+		if !ok {
+			userSession = models.NewSession()
+			sessions[r.Session.SessionID] = userSession
+			resp.Text, resp.TTS = answer.StartGamePhrase()
+			return resp
 		}
 
-		return
+		switch r.Request.Type {
+		case marusia.SimpleUtterance:
+			fmt.Println("ok: ", ok, "music started: ", userSession.MusicStarted)
+			fmt.Println("Command: ", r.Request.Command, "Track name: ", userSession.CurrentTrack.Title)
+
+			// выход из игры в любом месте
+			if r.Request.Command == marusia.OnInterrupt {
+				resp.Text, resp.TTS = answer.GoodBye, answer.GoodBye
+				resp.EndSession = true
+				delete(sessions, r.Session.SessionID)
+				return resp
+			}
+
+			// TODO вместо strings.Contains проверять наличие в токенах
+
+			if userSession.GameStatus == models.New {
+				// логика после приветствия
+				if strings.Contains(r.Request.Command, answer.AgainE) || strings.Contains(r.Request.Command, answer.DontUnderstand) || strings.Contains(r.Request.Command, answer.Again) {
+					// TODO хорошо бы состояние сделать "классом" со своей стандартной фразой, и запускать повторение прям из логики класса состояния (повторение будет перезапускать стандартную фразу состояния)
+					resp.Text, resp.TTS = answer.StartGamePhrase()
+				} else {
+					userSession.GameStatus = models.ChoosingGenre
+					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
+				}
+			} else if userSession.GameStatus == models.ChoosingGenre || userSession.GameStatus == models.ListingGenres {
+				// логика после предложения выбрать жанр|
+				if strings.Contains(r.Request.Command, answer.AgainE) || strings.Contains(r.Request.Command, answer.DontUnderstand) || strings.Contains(r.Request.Command, answer.Again) {
+					// попросили повторить
+					if userSession.GameStatus == models.ChoosingGenre {
+						resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
+					} else if userSession.GameStatus == models.ListingGenres {
+						resp.Text, resp.TTS = answer.AvailableGenres, answer.AvailableGenres
+					}
+				} else if strings.Contains(r.Request.Command, answer.List) || strings.Contains(r.Request.Command, answer.LetsGo) || strings.Contains(r.Request.Command, answer.Available) {
+					// попросили перечислить
+					userSession.GameStatus = models.ListingGenres
+					resp.Text, resp.TTS = answer.AvailableGenres, answer.AvailableGenres
+				} else if strings.Contains(r.Request.Command, strings.ToLower(answer.NotRock)) {
+					// не рок
+					// TODO вставить фразу о запуске не рока
+					currentGameTracks = allTracks.NotRock
+					sessions[r.Session.SessionID] = userSession
+					userSession.GenreTrackCounter = 0
+					userSession.CurrentGenre = answer.NotRock
+					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				} else if strings.Contains(r.Request.Command, strings.ToLower(answer.Rock)) {
+					// рок
+					// TODO вставить фразу о запуске рока
+					currentGameTracks = allTracks.Rock
+					sessions[r.Session.SessionID] = userSession
+					userSession.GenreTrackCounter = 0
+					userSession.CurrentGenre = answer.Rock
+					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				} else if strings.Contains(r.Request.Command, strings.ToLower(answer.Any)) {
+					// любой
+					// TODO вставить фразу о запуске любого
+					currentGameTracks = append(allTracks.NotRock, allTracks.Rock...)
+					sessions[r.Session.SessionID] = userSession
+					userSession.GenreTrackCounter = 0
+					userSession.CurrentGenre = answer.Any
+					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				} else {
+					// непонел
+					// TODO здесь надо находить жанр, похожий на названный
+					resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
+				}
+			} else if userSession.GameStatus == models.Playing {
+				// логика во время игры
+				if strings.Contains(r.Request.Command, answer.ChangeGenre) || strings.Contains(r.Request.Command, answer.ChangeGenre_) || strings.Contains(r.Request.Command, answer.AnotherGenre) {
+					// попросили поменять жанр
+					userSession.GameStatus = models.ChoosingGenre
+					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
+				} else if userSession.MusicStarted {
+					// после первого прослушивания
+					if strings.Contains(r.Request.Command, answer.Next) || strings.Contains(r.Request.Command, answer.GiveUp) {
+						// игрок сдается
+						userSession.MusicStarted = false
+						resp.Text, resp.TTS = answer.LosePhrase(userSession)
+					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) && strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
+						// если сразу угадал исполнителя и название
+						resp.Text, resp.TTS = answer.WinPhrase(userSession)
+						userSession.MusicStarted = false
+					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) {
+						// если угадал название
+						userSession.TitleMatch = true
+						if userSession.ArtistMatch {
+							// если до этого угадал исполнителя
+							resp.Text, resp.TTS = answer.WinPhrase(userSession)
+							userSession.MusicStarted = false
+						} else {
+							resp = game.WrongAnswerPlay(userSession, resp)
+						}
+					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
+						// если угадал исполнителя
+						userSession.ArtistMatch = true
+						if userSession.TitleMatch {
+							// если до этого угадал название
+							resp.Text, resp.TTS = answer.WinPhrase(userSession)
+							userSession.MusicStarted = false
+						} else {
+							resp = game.WrongAnswerPlay(userSession, resp)
+						}
+					} else if userSession.NextLevelLoses {
+						// если все попытки провалились
+						userSession.MusicStarted = false
+						resp.Text, resp.TTS = answer.LosePhrase(userSession)
+					} else {
+						resp = game.WrongAnswerPlay(userSession, resp)
+					}
+				} else {
+					// перед первым или после последнего прослушивания
+					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+				}
+			} else {
+				resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
+			}
+		}
+		return resp
 	})
 
-	http.HandleFunc("/", wh.HandleFunc)
+	http.HandleFunc("/", mywh.HandleFunc)
 
-	err := http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
 		return
 	}
