@@ -3,36 +3,67 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/seehuhn/mt19937"
 	"guessTheSongMarusia/answer"
 	"guessTheSongMarusia/game"
 	"guessTheSongMarusia/models"
-	"log"
+	"guessTheSongMarusia/router"
+	"guessTheSongMarusia/utils"
 	"math/rand"
-	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	log "guessTheSongMarusia/pkg/logger"
+
+	"github.com/seehuhn/mt19937"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+
 	"github.com/SevereCloud/vksdk/v2/marusia"
+	"github.com/gin-gonic/gin"
+
+	musicDelivery "guessTheSongMarusia/microservice/music/delivery"
+	musicRepo "guessTheSongMarusia/microservice/music/repository"
+	musicUsecase "guessTheSongMarusia/microservice/music/usecase"
 )
+
+const logMessage = "server:"
 
 // Навык "Угадай музло"
 func main() {
+	message := logMessage + "Main:"
+	log.Init(logrus.DebugLevel)
+	log.Info(fmt.Sprintf(message+"started, log level = %s", logrus.DebugLevel))
+
+	viper.AddConfigPath("../../config")
+	viper.SetConfigName("config")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Error("Config isn't found 1")
+		os.Exit(1)
+	}
+	viper.SetConfigFile("../../.env")
+	err = viper.MergeInConfig()
+	if err != nil {
+		log.Error("Config isn't found 2")
+		os.Exit(1)
+	}
+	
 	mywh := marusia.NewWebhook()
 	mywh.EnableDebuging()
 
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
 
-	b, err := os.ReadFile(`/Users/frbgd/sources/tp/tp-marusia-final/cmd/music.json`)
+	b, err := os.ReadFile(`../../config/music.json`)
 	if err != nil {
-		fmt.Print(err)
+		log.Error(err)
 	}
 	jsonTracks := string(b)
 	var allTracks models.TracksPerGenres
 	if err := json.Unmarshal([]byte(jsonTracks), &allTracks); err != nil {
-		log.Fatalln(err.Error())
+		log.Error(err.Error())
+		os.Exit(1)
 	}
 	var currentGameTracks []models.VKTrack
 
@@ -167,9 +198,22 @@ func main() {
 		return resp
 	})
 
-	http.HandleFunc("/", mywh.HandleFunc)
+	r := gin.Default()
 
-	err = http.ListenAndServe(":8080", nil)
+	postgresDB, err := utils.InitPostgres()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+	musicR := musicRepo.NewMusicRepository(postgresDB)
+	musicU := musicUsecase.NewMusicUsecase(musicR)
+	musicD := musicDelivery.NewMusicDelivery(musicU)
+	r.Any("/",gin.WrapF(mywh.HandleFunc))
+
+	musicRouter := r.Group("/music")
+	router.MusicEndpoints(musicRouter, musicD)
+
+	err = r.Run(":8080")
 	if err != nil {
 		return
 	}
