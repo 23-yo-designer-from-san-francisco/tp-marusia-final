@@ -1,0 +1,27 @@
+version: "3.5"
+services:
+  guessthesongmarusia:
+    container_name: guessthesongmarusia
+    build: 
+      context: .
+    restart: unless-stopped
+    command: "./marusia"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:10.5
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    env_file:
+      - .env
+    volumes:
+      #- ./db_data:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d

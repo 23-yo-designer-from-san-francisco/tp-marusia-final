@@ -1,17 +1,19 @@
 package models
 
 type Duration int64
-
-const (
-	TwoSecondsLevel = iota
-	FiveSecondsLevel
-	TenSecondsLevel
-)
+type GameStatus int32
 
 const (
 	Two  Duration = 2
 	Five Duration = 5
 	Ten  Duration = 10
+)
+
+const (
+	New           GameStatus = 0
+	ChoosingGenre GameStatus = 1
+	ListingGenres GameStatus = 2
+	Playing       GameStatus = 3
 )
 
 type Track struct {
@@ -22,25 +24,44 @@ type Track struct {
 }
 
 type Session struct {
-	CurrentLevel   Duration
-	CurrentPoints  int64
-	CurrentTrack   VKTrack
-	GameStarted    bool
-	MusicStarted   bool
-	NextLevelLoses bool
-	PlayedTracks   map[int]bool
+	CurrentLevel      Duration
+	CurrentPoints     int64
+	CurrentTrack      VKTrack
+	GameStatus        GameStatus
+	MusicStarted      bool
+	NextLevelLoses    bool
+	TitleMatch        bool
+	ArtistMatch       bool
+	PlayedTracks      map[int]bool
+	CurrentGenre      string
+	GenreTrackCounter int
+	Fails             int
 }
 
 func NewSession() *Session {
 	return &Session{
 		PlayedTracks: make(map[int]bool),
+		GameStatus:   New,
 	}
 }
 
+type TracksPerGenres struct {
+	Rock    []VKTrack `json:"rock"`
+	NotRock []VKTrack `json:"not_rock"`
+}
+
 type VKTrack struct {
-	Title     string `json:"title"`
-	Artist    string `json:"artist"`
-	Duration2 string `json:"duration_2"`
-	Duration3 string `json:"duration_3"`
-	Duration5 string `json:"duration_5"`
+	Title     string `json:"title,omitempty"`
+	Artist    string `json:"artist,omitempty"`
+	Duration2 string `json:"duration_2,omitempty"`
+	Duration3 string `json:"duration_3,omitempty"`
+	Duration5 string `json:"duration_5,omitempty"`
+	Duration15 string `json:"duration_15,omitempty"`
+	Artists []string `json:"-"`
+	HumanTitle string `json:"-"`
+	HumanArtists []string `json:"-"`
+}
+
+type VKTracks struct {
+	VKTracks []VKTrack
 }

@@ -1,0 +1,5 @@
+postgres:
+  port: 5432
+  host: "postgres"
+  user: "a_shirshov"
+  database: "postgres"
