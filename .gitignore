@@ -26,6 +26,6 @@ cmd/main
 
 /pkg/pychorus/pychorus.egg-info
 /pkg/pychorus/dist
-*music.json
 .env
 .gitignore
+.vscode

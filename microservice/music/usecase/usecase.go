@@ -44,7 +44,7 @@ func validateMusicTrackTitle(title string) (string, bool) {
 	if !normReg.MatchString(title){
 		return "", false
 	}
-	return title, true
+	return strings.ToLower(title), true
 }
 
 func getArtists(artist string) ([]string) {
@@ -78,7 +78,7 @@ func validateMusicArtists(artists []string) ([]string, bool) {
 		if !normReg.MatchString(artist){
 			return []string{}, false
 		}
-		returnResult = append(returnResult, artist)
+		returnResult = append(returnResult, strings.ToLower(artist))
 	}
 	return returnResult, true
 }
@@ -113,4 +113,8 @@ func (mU *MusicUsecase) CreateAllMusic(Tracks []models.VKTrack) (error) {
 		}
 	}
 	return nil
+}
+
+func (mU *MusicUsecase) GetSongsByArtists(artist string) ([]models.VKTrack, error) {
+	return mU.musicRepository.GetSongsByArtists(artist)
 }

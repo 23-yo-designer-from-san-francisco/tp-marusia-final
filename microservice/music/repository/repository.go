@@ -11,6 +11,9 @@ const (
 	insertTrackQuery = `insert into music (title, artist, duration_two_url, duration_three_url, duration_five_url, duration_fifteen_url, human_title)
 		values ($1, $2, $3, $4, $5, $6, $7) returning id;`
 	insertArtistQuery = `insert into artist (music_id, artist, human_artist) values ($1, $2, $3);`
+	getSongsByHumanArtist =  `select m.title, m.artist, m.duration_two_url, m.duration_three_url, m.duration_five_url, m.duration_fifteen_url, m.human_title 
+		from music as m join artist on artist.music_id = m.id where artist.human_artist = $1;
+	`
 )
 
 type MusicRepository struct {
@@ -52,4 +55,13 @@ func(mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
 	}
 	tx.Commit()
 	return nil
+}
+
+func (mR *MusicRepository) GetSongsByArtists(artist string) ([]models.VKTrack, error) {
+	var VKTracks = []models.VKTrack{}
+	err := mR.db.Select(&VKTracks, getSongsByHumanArtist, artist)
+	if err != nil {
+		return nil, err
+	}
+	return VKTracks, nil
 }

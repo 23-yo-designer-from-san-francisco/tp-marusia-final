@@ -51,14 +51,14 @@ type TracksPerGenres struct {
 }
 
 type VKTrack struct {
-	Title     string `json:"title,omitempty"`
-	Artist    string `json:"artist,omitempty"`
-	Duration2 string `json:"duration_2,omitempty"`
-	Duration3 string `json:"duration_3,omitempty"`
-	Duration5 string `json:"duration_5,omitempty"`
-	Duration15 string `json:"duration_15,omitempty"`
+	Title     string `json:"title,omitempty" db:"title"`
+	Artist    string `json:"artist,omitempty" db:"artist"`
+	Duration2 string `json:"duration_2,omitempty" db:"duration_two_url"`
+	Duration3 string `json:"duration_3,omitempty" db:"duration_three_url"`
+	Duration5 string `json:"duration_5,omitempty" db:"duration_five_url"`
+	Duration15 string `json:"duration_15,omitempty" db:"duration_fifteen_url"`
 	Artists []string `json:"-"`
-	HumanTitle string `json:"-"`
+	HumanTitle string `json:"human_title" db:"human_title"`
 	HumanArtists []string `json:"-"`
 }
 

@@ -8,4 +8,5 @@ import (
 
 func MusicEndpoints(r *gin.RouterGroup, mD *musicD.MusicDelivery) {
 	r.POST("", mD.CreateAllMusic)
+	r.GET("", mD.GetSongsByArtists)
 }
