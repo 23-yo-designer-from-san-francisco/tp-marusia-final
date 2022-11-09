@@ -43,3 +43,22 @@ func (mD *MusicDelivery) CreateAllMusic(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, "OK")
 }
+
+func (mD *MusicDelivery) GetSongsByArtists(c *gin.Context) {
+	message := logMessage + "GetSongsByArtists:"
+	log.Debug(message + "started")
+
+	artist := c.Query("artist")
+	if artist == "" {
+		c.JSON(http.StatusOK, "No artist in query param")
+		return
+	}
+
+	resultSongs, err := mD.musicUsecase.GetSongsByArtists(artist)
+	if err != nil {
+		c.JSON(http.StatusOK, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, resultSongs)
+
+}
