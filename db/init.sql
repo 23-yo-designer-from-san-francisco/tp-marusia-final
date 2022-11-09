@@ -16,3 +16,17 @@ CREATE TABLE IF NOT EXISTS artist (
     artist text,
     human_artist text
 );
+
+CREATE TABLE IF NOT EXISTS users (
+    id serial not null unique,
+    vk_id char(64) not null unique,
+    points int default 0,
+    guessed_songs_count int default 0,
+    failed_songs_count int default 0
+);
+
+CREATE TABLE IF NOT EXISTS track_history (
+    id serial not null unique,
+    user_id int references "users"(id),
+    track int references "music"(id)
+);
