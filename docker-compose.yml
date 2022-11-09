@@ -15,7 +15,7 @@ services:
     image: postgres:10.5
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "5434:5432"
     logging:
       options:
         max-size: 10m

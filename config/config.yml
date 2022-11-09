@@ -1,5 +1,5 @@
 postgres:
-  port: 5432
+  port: 5434
   host: "postgres"
   user: "a_shirshov"
   database: "postgres"
