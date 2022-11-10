@@ -3,10 +3,10 @@ package usecase
 import (
 	"guessTheSongMarusia/microservice/music"
 	"guessTheSongMarusia/models"
+	log "guessTheSongMarusia/pkg/logger"
 	"html"
 	"regexp"
 	"strings"
-	log "guessTheSongMarusia/pkg/logger"
 )
 
 type MusicUsecase struct {
@@ -21,10 +21,10 @@ func NewMusicUsecase(musicR music.Repository) *MusicUsecase {
 
 func removeCharacters(input string, characters string) string {
 	filter := func(r rune) rune {
-			if strings.IndexRune(characters, r) < 0 {
-					return r
-			}
-			return -1
+		if strings.IndexRune(characters, r) < 0 {
+			return r
+		}
+		return -1
 	}
 
 	return strings.Map(filter, input)
@@ -33,30 +33,30 @@ func removeCharacters(input string, characters string) string {
 
 func validateMusicTrackTitle(title string) (string, bool) {
 	title = html.UnescapeString(title)
-	title = removeCharacters(title,".,!?")
+	title = removeCharacters(title, ".,!?")
 	//Удаляет скобки и содержимое
 	reg := regexp.MustCompile(`\([^)]*\)`)
-	title = reg.ReplaceAllString(title,"")
-	title = strings.Replace(title,"$","s",-1)
-	title = strings.Replace(title,"é","e",-1)
+	title = reg.ReplaceAllString(title, "")
+	title = strings.Replace(title, "$", "s", -1)
+	title = strings.Replace(title, "é", "e", -1)
 	//Если же что-то с чём-то, то нам такое не нужно
 	normReg := regexp.MustCompile(`^[a-zA-Z ]*$`)
-	if !normReg.MatchString(title){
+	if !normReg.MatchString(title) {
 		return "", false
 	}
 	return strings.ToLower(title), true
 }
 
-func getArtists(artist string) ([]string) {
+func getArtists(artist string) []string {
 	var returnResult []string
 	artists := strings.Split(artist, "feat.")
 	for _, artistSplit := range artists {
 		resultArtists := strings.Split(artistSplit, ",")
 		for _, resultArtist := range resultArtists {
-			if(resultArtist[0] == ' ') {
+			if resultArtist[0] == ' ' {
 				resultArtist = resultArtist[1:]
 			}
-			if (resultArtist[len(resultArtist)-1] == ' ') {
+			if resultArtist[len(resultArtist)-1] == ' ' {
 				resultArtist = resultArtist[:len(resultArtist)-1]
 			}
 			returnResult = append(returnResult, resultArtist)
@@ -69,13 +69,13 @@ func validateMusicArtists(artists []string) ([]string, bool) {
 	var returnResult []string
 	for _, artist := range artists {
 		artist = html.UnescapeString(artist)
-		artist = removeCharacters(artist,"!?")
-		artist = strings.Replace(artist,"$","s",-1)
-		artist = strings.Replace(artist,"é","e",-1)
+		artist = removeCharacters(artist, "!?")
+		artist = strings.Replace(artist, "$", "s", -1)
+		artist = strings.Replace(artist, "é", "e", -1)
 		reg := regexp.MustCompile(`\([^)]*\)`)
-		artist = reg.ReplaceAllString(artist,"")
+		artist = reg.ReplaceAllString(artist, "")
 		normReg := regexp.MustCompile(`^[a-zA-Z ]*$`)
-		if !normReg.MatchString(artist){
+		if !normReg.MatchString(artist) {
 			return []string{}, false
 		}
 		returnResult = append(returnResult, strings.ToLower(artist))
@@ -99,7 +99,7 @@ func validateMusicTrack(track *models.VKTrack) (*models.VKTrack, bool) {
 	return track, true
 }
 
-func (mU *MusicUsecase) CreateAllMusic(Tracks []models.VKTrack) (error) {
+func (mU *MusicUsecase) CreateAllMusic(Tracks []models.VKTrack) error {
 	for _, track := range Tracks {
 		track, ok := validateMusicTrack(&track)
 		if !ok {
@@ -117,4 +117,13 @@ func (mU *MusicUsecase) CreateAllMusic(Tracks []models.VKTrack) (error) {
 
 func (mU *MusicUsecase) GetSongsByArtists(artist string) ([]models.VKTrack, error) {
 	return mU.musicRepository.GetSongsByArtists(artist)
+}
+
+func (mU *MusicUsecase) GetSongById(id int) (models.VKTrack, error) {
+	track, err := mU.musicRepository.GetSongById(id)
+	return *track, err
+}
+
+func (mU *MusicUsecase) GetTracksCount() (int, error) {
+	return mU.musicRepository.GetTracksCount()
 }

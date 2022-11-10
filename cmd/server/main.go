@@ -49,6 +49,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	postgresDB, err := utils.InitPostgres()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+	musicR := musicRepo.NewMusicRepository(postgresDB)
+	musicU := musicUsecase.NewMusicUsecase(musicR)
+	musicD := musicDelivery.NewMusicDelivery(musicU)
+
 	mywh := marusia.NewWebhook()
 	mywh.EnableDebuging()
 
@@ -66,7 +75,11 @@ func main() {
 		os.Exit(1)
 	}
 	var currentGameTracks []models.VKTrack
-
+	trackCount, err := musicU.GetTracksCount()
+	if err != nil {
+		logrus.Error(err)
+	}
+	logrus.Warn(trackCount)
 	sessions := make(map[string]*models.Session)
 
 	mywh.OnEvent(func(r marusia.Request) (resp marusia.Response) {
@@ -103,7 +116,7 @@ func main() {
 					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
 				}
 			} else if userSession.GameStatus == models.ChoosingGenre || userSession.GameStatus == models.ListingGenres {
-				// логика после предложения выбрать жанр|
+				// логика после предложения выбрать жанр
 				if utils.ContainsAny(r.Request.Command, answer.AgainE, answer.DontUnderstand, answer.Again) {
 					// попросили повторить
 					switch userSession.GameStatus {
@@ -127,8 +140,7 @@ func main() {
 					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
 				} else if userSession.MusicStarted {
 					// после первого прослушивания
-					if strings.Contains(r.Request.Command, answer.Next) ||
-						strings.Contains(r.Request.Command, answer.GiveUp) {
+					if utils.ContainsAny(r.Request.Command, answer.Next, answer.GiveUp) {
 						// игрок сдается
 						userSession.MusicStarted = false
 						resp.Text, resp.TTS = answer.LosePhrase(userSession)
@@ -176,17 +188,7 @@ func main() {
 	})
 
 	r := gin.Default()
-
-	postgresDB, err := utils.InitPostgres()
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-	musicR := musicRepo.NewMusicRepository(postgresDB)
-	musicU := musicUsecase.NewMusicUsecase(musicR)
-	musicD := musicDelivery.NewMusicDelivery(musicU)
 	r.Any("/", gin.WrapF(mywh.HandleFunc))
-
 	musicRouter := r.Group("/music")
 	router.MusicEndpoints(musicRouter, musicD)
 

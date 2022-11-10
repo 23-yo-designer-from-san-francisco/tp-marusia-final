@@ -10,13 +10,39 @@ import (
 	log "guessTheSongMarusia/pkg/logger"
 )
 
+// https://sqlformat.org/
 const (
-	insertTrackQuery = `insert into music (title, artist, duration_two_url, duration_three_url, duration_five_url, duration_fifteen_url, human_title)
-		values ($1, $2, $3, $4, $5, $6, $7) returning id;`
+	insertTrackQuery = `
+		INSERT INTO music (title, artist, duration_two_url, duration_three_url, duration_five_url, duration_fifteen_url, human_title)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id;
+`
 	insertArtistQuery     = `insert into artist (music_id, artist, human_artist) values ($1, $2, $3);`
-	getSongsByHumanArtist = `select m.title, m.artist, m.duration_two_url, m.duration_three_url, m.duration_five_url, m.duration_fifteen_url, m.human_title 
-		from music as m join artist on artist.music_id = m.id where artist.human_artist = $1;
+	getSongsByHumanArtist = `
+		SELECT m.title,
+			   m.artist,
+			   m.duration_two_url,
+			   m.duration_three_url,
+			   m.duration_five_url,
+			   m.duration_fifteen_url,
+			   m.human_title
+		FROM music AS m
+		JOIN artist ON artist.music_id = m.id
+		WHERE artist.human_artist = $1;
 	`
+	getSongById = `
+		SELECT m.title,
+			   m.artist,
+			   m.duration_two_url,
+			   m.duration_three_url,
+			   m.duration_five_url,
+			   m.duration_fifteen_url,
+			   m.human_title
+		FROM music AS m
+		JOIN artist ON artist.music_id = m.id
+		WHERE m.id = $1;
+	`
+	getTracksCount = `SELECT max(id) FROM music`
 )
 
 type MusicRepository struct {
@@ -69,4 +95,23 @@ func (mR *MusicRepository) GetSongsByArtists(artist string) ([]models.VKTrack, e
 		return nil, err
 	}
 	return VKTracks, nil
+}
+
+func (mR *MusicRepository) GetSongById(id int) (*models.VKTrack, error) {
+	var VKTrack = &models.VKTrack{}
+	err := mR.db.Select(&VKTrack, getSongById, id)
+	if err != nil {
+		return nil, err
+	}
+	return VKTrack, nil
+}
+
+func (mR *MusicRepository) GetTracksCount() (int, error) {
+	count := []int{0}
+	err := mR.db.Select(&count, getTracksCount)
+
+	if err != nil {
+		return -1, err
+	}
+	return count[0], nil
 }

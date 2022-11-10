@@ -16,7 +16,7 @@ services:
       - postgres
 
   postgres:
-    image: postgres:10.5
+    image: postgres
     restart: unless-stopped
     logging:
       options:
