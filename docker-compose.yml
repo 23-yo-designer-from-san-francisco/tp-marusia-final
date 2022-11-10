@@ -1,4 +1,8 @@
 version: "3.5"
+
+volumes:
+  pgadmindata:
+
 services:
   guessthesongmarusia:
     container_name: guessthesongmarusia
@@ -12,10 +16,8 @@ services:
       - postgres
 
   postgres:
-    image: postgres:10.5
+    image: postgres
     restart: unless-stopped
-    ports:
-      - "5434:5432"
     logging:
       options:
         max-size: 10m
@@ -25,3 +27,15 @@ services:
     volumes:
       #- ./db_data:/var/lib/postgresql/data
       - ./db:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    ports: 
+      - "10001:80"
+    env_file:
+      - .env
+    volumes:
+      - pgadmindata:/var/lib/pgadmin

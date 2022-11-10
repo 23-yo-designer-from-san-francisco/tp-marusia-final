@@ -2,12 +2,11 @@ package utils
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
+	"log"
 )
 
 func buildConnectionString(user, password, host, port, database string) string {
