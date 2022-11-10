@@ -48,7 +48,7 @@ func main() {
 		log.Error("Config isn't found 2")
 		os.Exit(1)
 	}
-	
+
 	mywh := marusia.NewWebhook()
 	mywh.EnableDebuging()
 
@@ -80,8 +80,8 @@ func main() {
 
 		switch r.Request.Type {
 		case marusia.SimpleUtterance:
-			fmt.Println("ok: ", ok, "music started: ", userSession.MusicStarted)
-			fmt.Println("Command: ", r.Request.Command, "Track name: ", userSession.CurrentTrack.Title)
+			logrus.Println("ok: ", ok, "music started: ", userSession.MusicStarted)
+			logrus.Println("Command: ", r.Request.Command, "Track name: ", userSession.CurrentTrack.Title)
 
 			// выход из игры в любом месте
 			if r.Request.Command == marusia.OnInterrupt {
@@ -91,7 +91,7 @@ func main() {
 				return resp
 			}
 
-			// TODO вместо strings.Contains проверять наличие в токенах
+			// TODO вместо strings.ContainsAny проверять наличие в токенах
 
 			if userSession.GameStatus == models.New {
 				// логика после приветствия
@@ -104,59 +104,36 @@ func main() {
 				}
 			} else if userSession.GameStatus == models.ChoosingGenre || userSession.GameStatus == models.ListingGenres {
 				// логика после предложения выбрать жанр|
-				if strings.Contains(r.Request.Command, answer.AgainE) || strings.Contains(r.Request.Command, answer.DontUnderstand) || strings.Contains(r.Request.Command, answer.Again) {
+				if utils.ContainsAny(r.Request.Command, answer.AgainE, answer.DontUnderstand, answer.Again) {
 					// попросили повторить
-					if userSession.GameStatus == models.ChoosingGenre {
+					switch userSession.GameStatus {
+					case models.ChoosingGenre:
 						resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
-					} else if userSession.GameStatus == models.ListingGenres {
+					case models.ListingGenres:
 						resp.Text, resp.TTS = answer.AvailableGenres, answer.AvailableGenres
 					}
-				} else if strings.Contains(r.Request.Command, answer.List) || strings.Contains(r.Request.Command, answer.LetsGo) || strings.Contains(r.Request.Command, answer.Available) {
+				} else if utils.ContainsAny(r.Request.Command, answer.List, answer.LetsGo, answer.Available) {
 					// попросили перечислить
 					userSession.GameStatus = models.ListingGenres
 					resp.Text, resp.TTS = answer.AvailableGenres, answer.AvailableGenres
-				} else if strings.Contains(r.Request.Command, strings.ToLower(answer.NotRock)) {
-					// не рок
-					// TODO вставить фразу о запуске не рока
-					currentGameTracks = allTracks.NotRock
-					sessions[r.Session.SessionID] = userSession
-					userSession.GenreTrackCounter = 0
-					userSession.CurrentGenre = answer.NotRock
-					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
-				} else if strings.Contains(r.Request.Command, strings.ToLower(answer.Rock)) {
-					// рок
-					// TODO вставить фразу о запуске рока
-					currentGameTracks = allTracks.Rock
-					sessions[r.Session.SessionID] = userSession
-					userSession.GenreTrackCounter = 0
-					userSession.CurrentGenre = answer.Rock
-					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
-				} else if strings.Contains(r.Request.Command, strings.ToLower(answer.Any)) {
-					// любой
-					// TODO вставить фразу о запуске любого
-					currentGameTracks = append(allTracks.NotRock, allTracks.Rock...)
-					sessions[r.Session.SessionID] = userSession
-					userSession.GenreTrackCounter = 0
-					userSession.CurrentGenre = answer.Any
-					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
 				} else {
-					// непонел
-					// TODO здесь надо находить жанр, похожий на названный
-					resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
+					resp, currentGameTracks = game.SelectGenre(userSession, r.Request.Command, resp, currentGameTracks, sessions, allTracks, r.Session.SessionID, rng)
 				}
 			} else if userSession.GameStatus == models.Playing {
 				// логика во время игры
-				if strings.Contains(r.Request.Command, answer.ChangeGenre) || strings.Contains(r.Request.Command, answer.ChangeGenre_) || strings.Contains(r.Request.Command, answer.AnotherGenre) {
+				if utils.ContainsAny(r.Request.Command, answer.ChangeGenre, answer.ChangeGenre_, answer.AnotherGenre) {
 					// попросили поменять жанр
 					userSession.GameStatus = models.ChoosingGenre
 					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
 				} else if userSession.MusicStarted {
 					// после первого прослушивания
-					if strings.Contains(r.Request.Command, answer.Next) || strings.Contains(r.Request.Command, answer.GiveUp) {
+					if strings.Contains(r.Request.Command, answer.Next) ||
+						strings.Contains(r.Request.Command, answer.GiveUp) {
 						// игрок сдается
 						userSession.MusicStarted = false
 						resp.Text, resp.TTS = answer.LosePhrase(userSession)
-					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) && strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
+					} else if utils.ContainsAll(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title),
+						strings.ToLower(userSession.CurrentTrack.Artist)) {
 						// если сразу угадал исполнителя и название
 						resp.Text, resp.TTS = answer.WinPhrase(userSession)
 						userSession.MusicStarted = false
@@ -208,7 +185,7 @@ func main() {
 	musicR := musicRepo.NewMusicRepository(postgresDB)
 	musicU := musicUsecase.NewMusicUsecase(musicR)
 	musicD := musicDelivery.NewMusicDelivery(musicU)
-	r.Any("/",gin.WrapF(mywh.HandleFunc))
+	r.Any("/", gin.WrapF(mywh.HandleFunc))
 
 	musicRouter := r.Group("/music")
 	router.MusicEndpoints(musicRouter, musicD)

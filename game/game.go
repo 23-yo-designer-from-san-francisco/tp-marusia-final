@@ -2,9 +2,11 @@ package game
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"guessTheSongMarusia/answer"
 	"guessTheSongMarusia/models"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/SevereCloud/vksdk/v2/marusia"
@@ -25,10 +27,12 @@ func StartGame(userSession *models.Session, tracks []models.VKTrack, resp marusi
 }
 
 func ChooseTrack(userSession *models.Session, tracks []models.VKTrack, rng *rand.Rand) models.VKTrack {
+	logrus.Warn("TRacks length", len(tracks))
 	var randTrackID int
 	for {
 		rand.Seed(time.Now().Unix())
 		randTrackID = rng.Int() % len(tracks)
+		fmt.Println("Total tracks", len(tracks), " Random track: ", randTrackID)
 		_, ok := userSession.PlayedTracks[randTrackID]
 		fmt.Println(len(userSession.PlayedTracks))
 		if !ok || len(userSession.PlayedTracks) == len(tracks) {
@@ -85,4 +89,39 @@ func WrongAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 	resultString := fmt.Sprintf("%s — %s %s %s. ", answer.IWillSayTheAnswer, answer.SaySongInfoString(userSession), answer.ToContinue, answer.ToStop)
 	resp.Text, resp.TTS = resultString, resultString
 	return resp
+}
+
+func SelectGenre(userSession *models.Session, command string, resp marusia.Response, currentGameTracks []models.VKTrack,
+	sessions map[string]*models.Session, allTracks models.TracksPerGenres, sessionID string, rng *rand.Rand) (marusia.Response, []models.VKTrack) {
+	logrus.Warn("SelectGenre called with ", currentGameTracks)
+	if strings.Contains(command, strings.ToLower(answer.NotRock)) {
+		// не рок
+		// TODO вставить фразу о запуске не рока
+		currentGameTracks = allTracks.NotRock
+		sessions[sessionID] = userSession
+		userSession.GenreTrackCounter = 0
+		userSession.CurrentGenre = answer.NotRock
+		resp = StartGame(userSession, currentGameTracks, resp, rng)
+	} else if strings.Contains(command, strings.ToLower(answer.Rock)) {
+		// рок
+		// TODO вставить фразу о запуске рока
+		currentGameTracks = allTracks.Rock
+		sessions[sessionID] = userSession
+		userSession.GenreTrackCounter = 0
+		userSession.CurrentGenre = answer.Rock
+		resp = StartGame(userSession, currentGameTracks, resp, rng)
+	} else if strings.Contains(command, strings.ToLower(answer.Any)) {
+		// любой
+		// TODO вставить фразу о запуске любого
+		currentGameTracks = append(allTracks.NotRock, allTracks.Rock...)
+		sessions[sessionID] = userSession
+		userSession.GenreTrackCounter = 0
+		userSession.CurrentGenre = answer.Any
+		resp = StartGame(userSession, currentGameTracks, resp, rng)
+	} else {
+		// непонел
+		// TODO здесь надо находить жанр, похожий на названный
+		resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
+	}
+	return resp, currentGameTracks
 }

@@ -40,6 +40,6 @@ func WinPhrase(userSession *models.Session) (string, string) {
 
 // Начало Игры
 func StartGamePhrase() (string, string) {
-	str := fmt.Sprintf("%s %s %s", Hello, ToStart, ToStop)
+	str := fmt.Sprintf("%s %s %s %s", Hello, ToStart, ToStartCompetitive, ToStop)
 	return str, str
 }
