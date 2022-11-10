@@ -97,13 +97,13 @@ func (mR *MusicRepository) GetSongsByArtists(artist string) ([]models.VKTrack, e
 	return VKTracks, nil
 }
 
-func (mR *MusicRepository) GetSongById(id int) (*models.VKTrack, error) {
-	var VKTrack = &models.VKTrack{}
-	err := mR.db.Select(&VKTrack, getSongById, id)
+func (mR *MusicRepository) GetSongById(id int) (models.VKTrack, error) {
+	var VKTracks []models.VKTrack
+	err := mR.db.Select(&VKTracks, getSongById, id)
 	if err != nil {
-		return nil, err
+		return models.VKTrack{}, err
 	}
-	return VKTrack, nil
+	return VKTracks[0], nil
 }
 
 func (mR *MusicRepository) GetTracksCount() (int, error) {

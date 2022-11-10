@@ -120,8 +120,7 @@ func (mU *MusicUsecase) GetSongsByArtists(artist string) ([]models.VKTrack, erro
 }
 
 func (mU *MusicUsecase) GetSongById(id int) (models.VKTrack, error) {
-	track, err := mU.musicRepository.GetSongById(id)
-	return *track, err
+	return mU.musicRepository.GetSongById(id)
 }
 
 func (mU *MusicUsecase) GetTracksCount() (int, error) {

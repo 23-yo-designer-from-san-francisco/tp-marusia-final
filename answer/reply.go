@@ -33,7 +33,7 @@ func LosePhrase(userSession *models.Session) (string, string) {
 }
 
 func WinPhrase(userSession *models.Session) (string, string) {
-	textString := fmt.Sprintf("%s %s %s %s", YouGuessText, SaySongInfoString(userSession), ToContinue, ToStop)
+	textString := fmt.Sprintf("%s %s %s", YouGuessText, ToContinue, ToStop)
 	ttsString := fmt.Sprintf("%s %s %s %s", YouGuessTTS, SaySongInfoString(userSession), ToContinue, ToStop)
 	return textString, ttsString
 }

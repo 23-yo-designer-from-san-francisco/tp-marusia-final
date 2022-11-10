@@ -2,13 +2,11 @@ package utils
 
 import (
 	"fmt"
-	"log"
-	"strings"
-
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
+	"log"
 )
 
 func buildConnectionString(user, password, host, port, database string) string {
@@ -35,23 +33,4 @@ func InitPostgres() (*sqlx.DB, error) {
 
 	return sqlx.NewDb(nativeDB, "pgx"), nil
 
-}
-
-func ContainsAny(str string, subs ...string) bool {
-	for _, sub := range subs {
-		if strings.Contains(str, sub) {
-			return true
-		}
-	}
-	return false
-}
-
-func ContainsAll(str string, subs ...string) bool {
-	count := 0
-	for _, sub := range subs {
-		if strings.Contains(str, sub) {
-			count += 1
-		}
-	}
-	return count == len(subs)
 }

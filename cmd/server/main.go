@@ -74,7 +74,7 @@ func main() {
 		log.Error(err.Error())
 		os.Exit(1)
 	}
-	var currentGameTracks []models.VKTrack
+
 	trackCount, err := musicU.GetTracksCount()
 	if err != nil {
 		logrus.Error(err)
@@ -130,7 +130,7 @@ func main() {
 					userSession.GameStatus = models.ListingGenres
 					resp.Text, resp.TTS = answer.AvailableGenres, answer.AvailableGenres
 				} else {
-					resp, currentGameTracks = game.SelectGenre(userSession, r.Request.Command, resp, currentGameTracks, sessions, allTracks, r.Session.SessionID, rng)
+					resp = game.SelectGenre(userSession, r.Request.Command, resp, trackCount, musicU, sessions, allTracks, r.Session.SessionID, rng)
 				}
 			} else if userSession.GameStatus == models.Playing {
 				// логика во время игры
@@ -178,7 +178,7 @@ func main() {
 					}
 				} else {
 					// перед первым или после последнего прослушивания
-					resp = game.StartGame(userSession, currentGameTracks, resp, rng)
+					resp = game.StartGame(userSession, resp, trackCount, musicU, rng)
 				}
 			} else {
 				resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
