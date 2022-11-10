@@ -79,7 +79,7 @@ func main() {
 	if err != nil {
 		logrus.Error(err)
 	}
-	logrus.Warn(trackCount)
+	logrus.Warnf("Track count %d", trackCount)
 	sessions := make(map[string]*models.Session)
 
 	mywh.OnEvent(func(r marusia.Request) (resp marusia.Response) {
@@ -93,29 +93,31 @@ func main() {
 
 		switch r.Request.Type {
 		case marusia.SimpleUtterance:
-			logrus.Println("ok: ", ok, "music started: ", userSession.MusicStarted)
-			logrus.Println("Command: ", r.Request.Command, "Track name: ", userSession.CurrentTrack.Title)
-
 			// выход из игры в любом месте
 			if r.Request.Command == marusia.OnInterrupt {
 				resp.Text, resp.TTS = answer.GoodBye, answer.GoodBye
 				resp.EndSession = true
+				//TODO перенести сессии в базку или редиску
 				delete(sessions, r.Session.SessionID)
 				return resp
 			}
 
 			// TODO вместо strings.ContainsAny проверять наличие в токенах
-
-			if userSession.GameStatus == models.New {
+			logrus.Warnf("Current mode: %d", userSession.GameStatus)
+			switch userSession.GameStatus {
+			case models.New:
 				// логика после приветствия
-				if strings.Contains(r.Request.Command, answer.AgainE) || strings.Contains(r.Request.Command, answer.DontUnderstand) || strings.Contains(r.Request.Command, answer.Again) {
+				if utils.ContainsAny(r.Request.Command, answer.AgainE, answer.DontUnderstand, answer.Again) {
 					// TODO хорошо бы состояние сделать "классом" со своей стандартной фразой, и запускать повторение прям из логики класса состояния (повторение будет перезапускать стандартную фразу состояния)
 					resp.Text, resp.TTS = answer.StartGamePhrase()
+				} else if strings.Contains(r.Request.Command, answer.Competition) {
+					userSession.GameStatus = models.CompetitionIntro
+					resp.Text, resp.TTS = answer.CompetitionRules, answer.CompetitionRules
 				} else {
 					userSession.GameStatus = models.ChoosingGenre
 					resp.Text, resp.TTS = answer.ChooseGenre, answer.ChooseGenre
 				}
-			} else if userSession.GameStatus == models.ChoosingGenre || userSession.GameStatus == models.ListingGenres {
+			case models.ChoosingGenre, models.ListingGenres:
 				// логика после предложения выбрать жанр
 				if utils.ContainsAny(r.Request.Command, answer.AgainE, answer.DontUnderstand, answer.Again) {
 					// попросили повторить
@@ -132,7 +134,7 @@ func main() {
 				} else {
 					resp = game.SelectGenre(userSession, r.Request.Command, resp, trackCount, musicU, sessions, allTracks, r.Session.SessionID, rng)
 				}
-			} else if userSession.GameStatus == models.Playing {
+			case models.Playing:
 				// логика во время игры
 				if utils.ContainsAny(r.Request.Command, answer.ChangeGenre, answer.ChangeGenre_, answer.AnotherGenre) {
 					// попросили поменять жанр
@@ -180,10 +182,26 @@ func main() {
 					// перед первым или после последнего прослушивания
 					resp = game.StartGame(userSession, resp, trackCount, musicU, rng)
 				}
-			} else {
+			case models.CompetitionIntro:
+				if strings.Contains(r.Request.Command, answer.Competition) {
+					userSession.GameStatus = models.CompetitionRules
+					sessions[r.Session.SessionID] = userSession //TODO я забыл как делать нормально и хочу немного поспать
+					resp.Text, resp.TTS = answer.CompetitionRules, answer.CompetitionRules
+				}
+			case models.CompetitionRules:
+				if strings.Contains(r.Request.Command, answer.LetsGo) {
+					logrus.Warn("COMPETITION MODE")
+					userSession.GameStatus = models.Competition
+				}
+			case models.Competition:
+				userSession.GameStatus = models.Playing
+				resp.TTS = "скажите играем"
+				resp.Text = resp.TTS
+			default:
 				resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
 			}
 		}
+		logrus.Warnf("New mode: %d", userSession.GameStatus)
 		return resp
 	})
 

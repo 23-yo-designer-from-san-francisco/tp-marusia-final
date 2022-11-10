@@ -1,7 +1,6 @@
 package models
 
 type Duration int64
-type GameStatus int32
 
 const (
 	Two  Duration = 2
@@ -10,10 +9,13 @@ const (
 )
 
 const (
-	New           GameStatus = 0
-	ChoosingGenre GameStatus = 1
-	ListingGenres GameStatus = 2
-	Playing       GameStatus = 3
+	New = iota
+	ChoosingGenre
+	ListingGenres
+	Playing
+	CompetitionIntro
+	CompetitionRules
+	Competition
 )
 
 type Track struct {
@@ -27,7 +29,7 @@ type Session struct {
 	CurrentLevel      Duration
 	CurrentPoints     int64
 	CurrentTrack      VKTrack
-	GameStatus        GameStatus
+	GameStatus        int
 	MusicStarted      bool
 	NextLevelLoses    bool
 	TitleMatch        bool
