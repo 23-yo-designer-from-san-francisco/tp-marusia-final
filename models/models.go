@@ -9,13 +9,14 @@ const (
 )
 
 const (
-	New = iota
-	ChoosingGenre
-	ListingGenres
-	Playing
-	CompetitionIntro
-	CompetitionRules
-	Competition
+	StatusNewGame = iota
+	StatusChoosingGenre
+	StatusListingGenres
+	StatusPlaying
+	StatusNewCompetition
+	StatusCompetitionRules
+	StatusCompetition
+	StatusChooseArtist
 )
 
 type Track struct {
@@ -29,7 +30,6 @@ type Session struct {
 	CurrentLevel      Duration
 	CurrentPoints     int64
 	CurrentTrack      VKTrack
-	GameStatus        int
 	MusicStarted      bool
 	NextLevelLoses    bool
 	TitleMatch        bool
@@ -38,12 +38,14 @@ type Session struct {
 	CurrentGenre      string
 	GenreTrackCounter int
 	Fails             int
+	GameState 		  *State
+	CurrentPlaylist   []VKTrack
 }
 
 func NewSession() *Session {
 	return &Session{
 		PlayedTracks: make(map[int]bool),
-		GameStatus:   New,
+		GameState: NewGameState,
 	}
 }
 

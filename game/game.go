@@ -2,12 +2,9 @@ package game
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"guessTheSongMarusia/answer"
 	"guessTheSongMarusia/microservice/music/usecase"
 	"guessTheSongMarusia/models"
 	"math/rand"
-	"strings"
 	"time"
 
 	"github.com/SevereCloud/vksdk/v2/marusia"
@@ -17,7 +14,7 @@ func StartGame(userSession *models.Session, resp marusia.Response, trackCount in
 	//TODO userSession.CurrentGenre тут выбрать жанр нужный
 	userSession.CurrentTrack = ChooseTrack(userSession, trackCount, mU, rng)
 	fmt.Println("Selected track", userSession.CurrentTrack)
-	userSession.GameStatus = models.Playing
+	userSession.GameState = models.PlayingState
 	userSession.MusicStarted = true
 	userSession.CurrentLevel = models.Two
 	userSession.NextLevelLoses = false
@@ -33,20 +30,16 @@ func ChooseTrack(userSession *models.Session, trackCount int, mU *usecase.MusicU
 
 	for {
 		rand.Seed(time.Now().Unix())
-		randTrackID = rng.Int() % trackCount
+		randTrackID = rng.Int() % len(userSession.CurrentPlaylist)
 		fmt.Println("Total tracks", trackCount, " Random track: ", randTrackID)
 		_, ok := userSession.PlayedTracks[randTrackID]
 		fmt.Println(len(userSession.PlayedTracks))
-		if !ok || len(userSession.PlayedTracks) == trackCount {
+		if !ok || len(userSession.PlayedTracks) == len(userSession.CurrentPlaylist) {
 			userSession.PlayedTracks[randTrackID] = true
 			break
 		}
 	}
-	track, err := mU.GetSongById(randTrackID)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	return track
+	return userSession.CurrentPlaylist[randTrackID]
 }
 
 func getRespTextFromLevel(userSession *models.Session) (string, string) {
@@ -92,38 +85,49 @@ func WrongAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 		resp.Text, resp.TTS = getRespTextFromLevel(userSession)
 		return resp
 	}
-	resultString := fmt.Sprintf("%s — %s %s %s. ", answer.IWillSayTheAnswer, answer.SaySongInfoString(userSession), answer.ToContinue, answer.ToStop)
+	resultString := fmt.Sprintf("%s — %s %s %s. ", models.IWillSayTheAnswer, models.SaySongInfoString(userSession), models.ToContinue, models.ToStop)
 	resp.Text, resp.TTS = resultString, resultString
 	return resp
 }
 
 func SelectGenre(userSession *models.Session, command string, resp marusia.Response, trackCount int, mU *usecase.MusicUsecase,
 	sessions map[string]*models.Session, allTracks models.TracksPerGenres, sessionID string, rng *rand.Rand) marusia.Response {
-	if strings.Contains(command, strings.ToLower(answer.NotRock)) {
-		// не рок
-		// TODO вставить фразу о запуске не рока
-		sessions[sessionID] = userSession
-		userSession.GenreTrackCounter = 0
-		userSession.CurrentGenre = answer.NotRock
-		resp = StartGame(userSession, resp, trackCount, mU, rng)
-	} else if strings.Contains(command, strings.ToLower(answer.Rock)) {
-		// рок
-		// TODO вставить фразу о запуске рока
-		sessions[sessionID] = userSession
-		userSession.GenreTrackCounter = 0
-		userSession.CurrentGenre = answer.Rock
-		resp = StartGame(userSession, resp, trackCount, mU, rng)
-	} else if strings.Contains(command, strings.ToLower(answer.Any)) {
-		// любой
-		// TODO вставить фразу о запуске любого
-		sessions[sessionID] = userSession
-		userSession.GenreTrackCounter = 0
-		userSession.CurrentGenre = answer.Any
-		resp = StartGame(userSession, resp, trackCount, mU, rng)
+	var tracks []models.VKTrack
+	var err error
+	if command == "любой" {
+		tracks, err = mU.GetAllMusic()
 	} else {
-		// непонел
-		// TODO здесь надо находить жанр, похожий на названный
-		resp.Text, resp.TTS = answer.IDontUnderstandYouPhrase()
+		tracks, err = mU.GetMusicByGenre(command)
 	}
+	
+	if err != nil || len(tracks) == 0 {
+		str := "Я не нашла нужный жанр либо просто вас не поняла"
+		fmt.Println(err.Error())
+		resp.Text, resp.TTS = str, str
+		return resp
+	}
+
+	sessions[sessionID] = userSession
+	userSession.GenreTrackCounter = 0
+	userSession.CurrentGenre = command
+	userSession.CurrentPlaylist = tracks
+	resp = StartGame(userSession, resp, trackCount, mU, rng)
 	return resp
+}
+
+func SelectArtist(userSession *models.Session, command string, resp marusia.Response, trackCount int, mU *usecase.MusicUsecase,
+	sessions map[string]*models.Session, allTracks models.TracksPerGenres, sessionID string, rng *rand.Rand) marusia.Response {
+	tracks, err := mU.GetSongsByArtist(command)
+	if err != nil || len(tracks) == 0 {
+		str := "Я не нашла нужного исполнителя либо просто вас не поняла"
+		resp.Text, resp.TTS = str, str
+		return resp
+	}
+
+	sessions[sessionID] = userSession
+	userSession.GenreTrackCounter = 0
+	userSession.CurrentGenre = command
+	userSession.CurrentPlaylist = tracks
+	resp = StartGame(userSession, resp, trackCount, mU, rng)
+	return resp	
 }
