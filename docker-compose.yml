@@ -1,8 +1,5 @@
 version: "3.5"
 
-volumes:
-  pgadmindata:
-
 services:
   guessthesongmarusia:
     container_name: guessthesongmarusia
@@ -25,7 +22,7 @@ services:
     env_file:
       - .env
     volumes:
-      #- ./db_data:/var/lib/postgresql/data
+      - postgresdatamarusia:/var/lib/postgresql/data
       - ./db:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
@@ -39,3 +36,7 @@ services:
       - .env
     volumes:
       - pgadmindata:/var/lib/pgadmin
+
+volumes:
+  postgresdatamarusia:
+  pgadmindata:

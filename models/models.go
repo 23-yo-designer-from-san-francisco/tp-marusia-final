@@ -19,6 +19,11 @@ const (
 	StatusChooseArtist
 )
 
+const (
+	GenreMode = iota
+	ArtistMode
+)
+
 type Track struct {
 	Id     int64
 	Title  string
@@ -36,7 +41,8 @@ type Session struct {
 	ArtistMatch       bool
 	PlayedTracks      map[int]bool
 	CurrentGenre      string
-	GenreTrackCounter int
+	GameMode		  int
+	TrackCounter      int
 	Fails             int
 	GameState 		  *State
 	CurrentPlaylist   []VKTrack
@@ -46,6 +52,7 @@ func NewSession() *Session {
 	return &Session{
 		PlayedTracks: make(map[int]bool),
 		GameState: NewGameState,
+		GameMode: GenreMode,
 	}
 }
 

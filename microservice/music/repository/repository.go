@@ -54,6 +54,10 @@ const (
 			join genre as g on g.id = gm.genre_id 
 			where g.human_title = $1;`
 	
+	getGenreFromHumanGenre = `select title from genre where human_title = $1;`
+
+	getArtistFromHumanArtist = `select distinct artist from artist where human_artist = $1`;
+	
 	getAllSongs = `
 		SELECT m.title,
 				m.artist,
@@ -167,4 +171,24 @@ func (mR *MusicRepository) GetAllMusic() ([]models.VKTrack, error) {
 		return nil, err
 	}
 	return VKTracks, nil
+}
+
+func (mR *MusicRepository) GetGenreFromHumanGenre(humanGenre string) (string, error) {
+	var genre string
+	err := mR.db.Get(&genre, getGenreFromHumanGenre, humanGenre)
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+	return genre, nil
+}
+
+func (mR *MusicRepository) GetArtistFromHumanArtist(humanArtist string) (string, error) {
+	var artist string
+	err := mR.db.Get(&artist, getArtistFromHumanArtist, humanArtist)
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+	return artist, nil
 }

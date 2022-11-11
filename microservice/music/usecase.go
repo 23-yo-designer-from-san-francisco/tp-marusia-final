@@ -10,4 +10,6 @@ type Usecase interface {
 	GetGenres() ([]string, error)
 	GetMusicByGenre(genre string) ([]models.VKTrack, error)
 	GetAllMusic() ([]models.VKTrack, error)
+	GetGenreFromHumanGenre(humanGenre string) (string, error)
+	GetArtistFromHumanArtist(humanArtist string) (string, error)
 }
