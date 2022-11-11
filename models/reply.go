@@ -68,3 +68,8 @@ func ChooseArtistPhrase() (string, string) {
 	str := "Назовите Исполнителя, а я посмотрю знаю ли я о нём"
 	return str, str
 }
+
+func CompetitionRulesPhrase() (string, string) {
+	str := CompetitionRules
+	return str, str
+}
