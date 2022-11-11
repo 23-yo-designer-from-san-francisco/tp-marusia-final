@@ -171,8 +171,9 @@ func main() {
 			case models.StatusPlaying:
 				// логика во время игры
 				printLog("PlayingRequest", r, userSession)
-				if utils.ContainsAny(r.Request.Command, models.ChangeGenre, models.ChangeGenre_, models.AnotherGenre) {
-					// попросили поменять жанр
+				if utils.ContainsAny(r.Request.Command, models.ChangeGenre, models.ChangeGenre_, models.AnotherGenre,
+						models.ChangeGame, models.ChangeGame_, models.AnotherGame) {
+					// попросили поменять жанр/игру
 					userSession.GameState = models.ChooseGenreState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else if userSession.MusicStarted {
@@ -189,7 +190,7 @@ func main() {
 					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) {
 						// если угадал название
 						userSession.TitleMatch = true
-						if userSession.ArtistMatch {
+						if userSession.ArtistMatch || userSession.GameMode == models.ArtistMode {
 							// если до этого угадал исполнителя
 							resp.Text, resp.TTS = models.WinPhrase(userSession)
 							userSession.MusicStarted = false

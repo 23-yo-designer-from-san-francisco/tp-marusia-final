@@ -138,3 +138,11 @@ func (mU *MusicUsecase) GetMusicByGenre(genre string) ([]models.VKTrack, error){
 func (mU *MusicUsecase) GetAllMusic() ([]models.VKTrack, error) {
 	return mU.musicRepository.GetAllMusic()
 }
+
+func (mU *MusicUsecase) GetGenreFromHumanGenre(humanGenre string) (string, error) {
+	return mU.musicRepository.GetGenreFromHumanGenre(humanGenre)
+}
+
+func (mU *MusicUsecase) GetArtistFromHumanArtist(humanArtist string) (string, error) {
+	return mU.musicRepository.GetArtistFromHumanArtist(humanArtist)
+}
