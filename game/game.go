@@ -91,6 +91,20 @@ func WrongAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 	return resp
 }
 
+func CloseAnswerPlay(userSession *models.Session, resp marusia.Response) marusia.Response {
+	if userSession.ArtistMatch {
+		str := "Вы правильно назвали исполнителя. А сможете сказать название песни?"
+		resp.Text, resp.TTS = str, str
+		return resp
+	}
+
+	if userSession.TitleMatch {
+		str := "Вы угадали название песни. А сможете назвать исполнителя?"
+		resp.Text, resp.TTS = str, str
+	}
+	return resp
+}
+
 func SelectGenre(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase,
 	sessions map[string]*models.Session, sessionID string, rng *rand.Rand) marusia.Response {
 	var tracks []models.VKTrack
@@ -101,9 +115,15 @@ func SelectGenre(userSession *models.Session, command string, resp marusia.Respo
 		tracks, err = mU.GetMusicByGenre(command)
 	}
 	
-	if err != nil || len(tracks) == 0 {
+	if err != nil {
 		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
 		fmt.Println(err.Error())
+		resp.Text, resp.TTS = str, str
+		return resp
+	}
+
+	if len(tracks) == 0  {
+		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
 		resp.Text, resp.TTS = str, str
 		return resp
 	}
