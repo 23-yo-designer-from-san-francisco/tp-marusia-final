@@ -10,9 +10,9 @@ import (
 	"github.com/SevereCloud/vksdk/v2/marusia"
 )
 
-func StartGame(userSession *models.Session, resp marusia.Response, trackCount int, mU *usecase.MusicUsecase, rng *rand.Rand) marusia.Response {
+func StartGame(userSession *models.Session, resp marusia.Response, mU *usecase.MusicUsecase, rng *rand.Rand) marusia.Response {
 	//TODO userSession.CurrentGenre тут выбрать жанр нужный
-	userSession.CurrentTrack = ChooseTrack(userSession, trackCount, mU, rng)
+	userSession.CurrentTrack = ChooseTrack(userSession, mU, rng)
 	fmt.Println("Selected track", userSession.CurrentTrack)
 	userSession.GameState = models.PlayingState
 	userSession.MusicStarted = true
@@ -25,16 +25,17 @@ func StartGame(userSession *models.Session, resp marusia.Response, trackCount in
 	return resp
 }
 
-func ChooseTrack(userSession *models.Session, trackCount int, mU *usecase.MusicUsecase, rng *rand.Rand) models.VKTrack {
+func ChooseTrack(userSession *models.Session, mU *usecase.MusicUsecase, rng *rand.Rand) models.VKTrack {
 	var randTrackID int
 
 	for {
 		rand.Seed(time.Now().Unix())
-		randTrackID = rng.Int() % len(userSession.CurrentPlaylist)
-		fmt.Println("Total tracks", trackCount, " Random track: ", randTrackID)
+		tracksCount := len(userSession.CurrentPlaylist)
+		randTrackID = rng.Int() % tracksCount
+		fmt.Println("Total tracks", tracksCount, " Random track: ", randTrackID)
 		_, ok := userSession.PlayedTracks[randTrackID]
 		fmt.Println(len(userSession.PlayedTracks))
-		if !ok || len(userSession.PlayedTracks) == len(userSession.CurrentPlaylist) {
+		if !ok || len(userSession.PlayedTracks) == tracksCount {
 			userSession.PlayedTracks[randTrackID] = true
 			break
 		}
@@ -90,8 +91,8 @@ func WrongAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 	return resp
 }
 
-func SelectGenre(userSession *models.Session, command string, resp marusia.Response, trackCount int, mU *usecase.MusicUsecase,
-	sessions map[string]*models.Session, allTracks models.TracksPerGenres, sessionID string, rng *rand.Rand) marusia.Response {
+func SelectGenre(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase,
+	sessions map[string]*models.Session, sessionID string, rng *rand.Rand) marusia.Response {
 	var tracks []models.VKTrack
 	var err error
 	if command == "любой" {
@@ -101,7 +102,7 @@ func SelectGenre(userSession *models.Session, command string, resp marusia.Respo
 	}
 	
 	if err != nil || len(tracks) == 0 {
-		str := "Я не нашла нужный жанр либо просто вас не поняла"
+		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
 		fmt.Println(err.Error())
 		resp.Text, resp.TTS = str, str
 		return resp
@@ -111,15 +112,15 @@ func SelectGenre(userSession *models.Session, command string, resp marusia.Respo
 	userSession.GenreTrackCounter = 0
 	userSession.CurrentGenre = command
 	userSession.CurrentPlaylist = tracks
-	resp = StartGame(userSession, resp, trackCount, mU, rng)
+	resp = StartGame(userSession, resp, mU, rng)
 	return resp
 }
 
-func SelectArtist(userSession *models.Session, command string, resp marusia.Response, trackCount int, mU *usecase.MusicUsecase,
-	sessions map[string]*models.Session, allTracks models.TracksPerGenres, sessionID string, rng *rand.Rand) marusia.Response {
+func SelectArtist(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase,
+	sessions map[string]*models.Session, sessionID string, rng *rand.Rand) marusia.Response {
 	tracks, err := mU.GetSongsByArtist(command)
 	if err != nil || len(tracks) == 0 {
-		str := "Я не нашла нужного исполнителя либо просто вас не поняла"
+		str := "Извините, я не знаю о таком исполнителя. Назовите кого-нибудь ещё."
 		resp.Text, resp.TTS = str, str
 		return resp
 	}
@@ -128,6 +129,6 @@ func SelectArtist(userSession *models.Session, command string, resp marusia.Resp
 	userSession.GenreTrackCounter = 0
 	userSession.CurrentGenre = command
 	userSession.CurrentPlaylist = tracks
-	resp = StartGame(userSession, resp, trackCount, mU, rng)
+	resp = StartGame(userSession, resp, mU, rng)
 	return resp	
 }

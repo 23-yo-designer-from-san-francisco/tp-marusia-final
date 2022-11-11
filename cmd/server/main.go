@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"guessTheSongMarusia/game"
 	"guessTheSongMarusia/models"
@@ -63,22 +62,22 @@ func main() {
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
 
-	b, err := os.ReadFile(`../../config/music.json`)
-	if err != nil {
-		log.Error(err)
-	}
-	jsonTracks := string(b)
-	var allTracks models.TracksPerGenres
-	if err := json.Unmarshal([]byte(jsonTracks), &allTracks); err != nil {
-		log.Error(err.Error())
-		os.Exit(1)
-	}
+	// b, err := os.ReadFile(`../../config/music.json`)
+	// if err != nil {
+	// 	log.Error(err)
+	// }
+	// jsonTracks := string(b)
+	// var allTracks models.TracksPerGenres
+	// if err := json.Unmarshal([]byte(jsonTracks), &allTracks); err != nil {
+	// 	log.Error(err.Error())
+	// 	os.Exit(1)
+	// }
 
-	trackCount, err := musicU.GetTracksCount()
-	if err != nil {
-		logrus.Error(err)
-	}
-	logrus.Warnf("Track count %d", trackCount)
+	// trackCount, err := musicU.GetTracksCount()
+	// if err != nil {
+	// 	logrus.Error(err)
+	// }
+	// logrus.Warnf("Track count %d", trackCount)
 	sessions := make(map[string]*models.Session)
 
 	mywh.OnEvent(func(r marusia.Request) (resp marusia.Response) {
@@ -146,7 +145,7 @@ func main() {
 					userSession.GameState = models.ChooseArtistState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else {
-					resp = game.SelectGenre(userSession, r.Request.Command, resp, trackCount, musicU, sessions, allTracks, r.Session.SessionID, rng)
+					resp = game.SelectGenre(userSession, r.Request.Command, resp, musicU, sessions, r.Session.SessionID, rng)
 				}
 				log.Debug("On Response: ", *userSession.GameState)
 
@@ -156,7 +155,7 @@ func main() {
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 					return
 				}
-				resp = game.SelectArtist(userSession, r.Request.Command, resp, trackCount, musicU, sessions, allTracks, r.Session.SessionID, rng)
+				resp = game.SelectArtist(userSession, r.Request.Command, resp, musicU, sessions, r.Session.SessionID, rng)
 				
 
 			case models.StatusPlaying:
@@ -205,18 +204,19 @@ func main() {
 					}
 				} else {
 					// перед первым или после последнего прослушивания
-					resp = game.StartGame(userSession, resp, trackCount, musicU, rng)
+					resp = game.StartGame(userSession, resp, musicU, rng)
 				}
+
 			case models.StatusNewCompetition:
 				if strings.Contains(r.Request.Command, models.Competition) {
 					userSession.GameState = models.NewCompetitionState
-					sessions[r.Session.SessionID] = userSession //TODO я забыл как делать нормально и хочу немного поспать
-					resp.Text, resp.TTS = models.CompetitionRules, models.CompetitionRules
+					//sessions[r.Session.SessionID] = userSession //TODO я забыл как делать нормально и хочу немного поспать
+					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				}
 			case models.StatusCompetitionRules:
 				if strings.Contains(r.Request.Command, models.LetsGo) {
 					logrus.Warn("COMPETITION MODE")
-					userSession.GameState.GameStatus = models.StatusCompetition
+					userSession.GameState = models.CompetitonRulesState
 				}
 			case models.StatusCompetition:
 				userSession.GameState.GameStatus = models.StatusPlaying
