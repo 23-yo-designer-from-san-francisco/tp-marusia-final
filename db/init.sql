@@ -1,6 +1,7 @@
-CREATE TABLE IF NOT EXISTS genres (
+CREATE TABLE IF NOT EXISTS genre (
     id serial not null unique,
-    title varchar not null unique
+    title varchar not null unique,
+    human_title text
 );
 
 CREATE TABLE IF NOT EXISTS music (
@@ -12,9 +13,15 @@ CREATE TABLE IF NOT EXISTS music (
     duration_five_url text,
     duration_fifteen_url text,
     human_title text,
-    genre int references "genres"(id),
     UNIQUE (title, artist)
 );
+
+CREATE TABLE IF NOT EXISTS genre_music (
+    id serial not null unique,
+    genre_id int references "genre"(id) on delete cascade not null,
+    music_id int references "music"(id) on delete cascade not null
+);
+
 
 CREATE TABLE IF NOT EXISTS artist (
     id serial not null unique,
@@ -23,7 +30,7 @@ CREATE TABLE IF NOT EXISTS artist (
     human_artist text
 );
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS player (
     id serial not null unique,
     vk_id char(64) not null unique,
     points int default 0,
@@ -33,11 +40,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS track_history (
     id serial not null unique,
-    user_id int references "users"(id),
+    user_id int references "player"(id),
     track int references "music"(id),
     guessed boolean,
     attempts int
 );
-
-INSERT INTO genres(title) VALUES
-    ('поп'), ('рок'),('хип хоп'),('джазззз'), ('альтернатива');

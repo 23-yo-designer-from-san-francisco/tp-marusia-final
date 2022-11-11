@@ -54,7 +54,7 @@ func (mD *MusicDelivery) GetSongsByArtists(c *gin.Context) {
 		return
 	}
 
-	resultSongs, err := mD.musicUsecase.GetSongsByArtists(artist)
+	resultSongs, err := mD.musicUsecase.GetSongsByArtist(artist)
 	if err != nil {
 		c.JSON(http.StatusOK, err.Error())
 		return

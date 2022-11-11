@@ -115,8 +115,8 @@ func (mU *MusicUsecase) CreateAllMusic(Tracks []models.VKTrack) error {
 	return nil
 }
 
-func (mU *MusicUsecase) GetSongsByArtists(artist string) ([]models.VKTrack, error) {
-	return mU.musicRepository.GetSongsByArtists(artist)
+func (mU *MusicUsecase) GetSongsByArtist(artist string) ([]models.VKTrack, error) {
+	return mU.musicRepository.GetSongsByArtist(artist)
 }
 
 func (mU *MusicUsecase) GetSongById(id int) (models.VKTrack, error) {
@@ -125,4 +125,16 @@ func (mU *MusicUsecase) GetSongById(id int) (models.VKTrack, error) {
 
 func (mU *MusicUsecase) GetTracksCount() (int, error) {
 	return mU.musicRepository.GetTracksCount()
+}
+
+func (mU *MusicUsecase) GetGenres() ([]string, error) {
+	return mU.musicRepository.GetGenres()
+}
+
+func (mU *MusicUsecase) GetMusicByGenre(genre string) ([]models.VKTrack, error){
+	return mU.musicRepository.GetMusicByGenre(genre)
+}
+
+func (mU *MusicUsecase) GetAllMusic() ([]models.VKTrack, error) {
+	return mU.musicRepository.GetAllMusic()
 }
