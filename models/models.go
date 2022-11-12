@@ -9,6 +9,20 @@ const (
 )
 
 const (
+	GuessedAllAttempt1 = 15
+	GuessedAllAttempt2 = 10
+	GuessedAllAttempt3 = 5
+
+	GuessedArtistAttempt1 = 15
+	GuessedArtistAttempt2 = 10
+	GuessedArtistAttempt3 = 5
+
+	GuessedTitleAttempt1 = 15
+	GuessedTitleAttempt2 = 10
+	GuessedTitleAttempt3 = 5
+)
+
+const (
 	StatusNewGame = iota
 	StatusChoosingGenre
 	StatusListingGenres
@@ -32,27 +46,28 @@ type Track struct {
 }
 
 type Session struct {
-	CurrentLevel      Duration
-	CurrentPoints     int64
-	CurrentTrack      VKTrack
-	MusicStarted      bool
-	NextLevelLoses    bool
-	TitleMatch        bool
-	ArtistMatch       bool
-	PlayedTracks      map[int]bool
-	CurrentGenre      string
-	GameMode		  int
-	TrackCounter      int
-	Fails             int
-	GameState 		  *State
-	CurrentPlaylist   []VKTrack
+	CurrentLevel    Duration
+	CurrentPoints   float64
+	CurrentTrack    VKTrack
+	MusicStarted    bool
+	NextLevelLoses  bool
+	TitleMatch      bool
+	ArtistMatch     bool
+	PlayedTracks    map[int]bool
+	CurrentGenre    string
+	GameMode        int
+	TrackCounter    int
+	Fails           int
+	GameState       *State
+	CurrentPlaylist []VKTrack
+	CompetitionMode bool
 }
 
 func NewSession() *Session {
 	return &Session{
 		PlayedTracks: make(map[int]bool),
-		GameState: NewGameState,
-		GameMode: GenreMode,
+		GameState:    NewGameState,
+		GameMode:     GenreMode,
 	}
 }
 

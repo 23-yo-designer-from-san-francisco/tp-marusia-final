@@ -27,7 +27,6 @@ func StartGame(userSession *models.Session, resp marusia.Response, mU *usecase.M
 
 func ChooseTrack(userSession *models.Session, mU *usecase.MusicUsecase, rng *rand.Rand) models.VKTrack {
 	var randTrackID int
-
 	for {
 		rand.Seed(time.Now().Unix())
 		tracksCount := len(userSession.CurrentPlaylist)
@@ -68,7 +67,7 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 		} else {
 			preWin = fmt.Sprintf("Вы выбрали жанр «%s». Чтобы поменять, скажите «сменить игру». ", userSession.CurrentGenre)
 		}
-	} 
+	}
 
 	fmt.Println("getAnswerString: ", audioVkId, "Current level: ", userSession.CurrentLevel)
 	fmt.Println(audioVkId)
@@ -104,7 +103,7 @@ func CloseAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 			str := "Исполнитель вам и так известен, а вот с названием похоже не везёт. Подумайте ещё"
 			resp.Text, resp.TTS = str, str
 		}
-		
+
 		return resp
 	}
 
@@ -127,7 +126,7 @@ func SelectGenre(userSession *models.Session, command string, resp marusia.Respo
 		tracks, _ = mU.GetMusicByGenre(command)
 		genre, err = mU.GetGenreFromHumanGenre(command)
 	}
-	
+
 	if err != nil {
 		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
 		fmt.Println(err.Error())
@@ -135,15 +134,14 @@ func SelectGenre(userSession *models.Session, command string, resp marusia.Respo
 		return resp
 	}
 
-	if len(tracks) == 0  {
+	if len(tracks) == 0 {
 		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
 		resp.Text, resp.TTS = str, str
 		return resp
 	}
-	
 
 	sessions[sessionID] = userSession
-	
+
 	userSession.TrackCounter = 0
 	userSession.CurrentGenre = genre
 	userSession.GameMode = models.GenreMode
@@ -162,7 +160,7 @@ func SelectArtist(userSession *models.Session, command string, resp marusia.Resp
 		return resp
 	}
 
-	if len(tracks) == 0  {
+	if len(tracks) == 0 {
 		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
 		resp.Text, resp.TTS = str, str
 		return resp
@@ -182,5 +180,5 @@ func SelectArtist(userSession *models.Session, command string, resp marusia.Resp
 	userSession.CurrentGenre = artist
 	userSession.CurrentPlaylist = tracks
 	resp = StartGame(userSession, resp, mU, rng)
-	return resp	
+	return resp
 }

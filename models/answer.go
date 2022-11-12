@@ -63,6 +63,7 @@ const (
 	DontGuess    = "Эх, вы не ^уга`дали^."
 	YouGuessText = "Вы молодец! Угадали!"
 	YouGuessTTS  = "Вы молодец! ^Уга`дали^! <speaker audio=marusia-sounds/game-win-1>"
+	YourScore    = "Ваш счет"
 )
 
 // Для ответов по песням
