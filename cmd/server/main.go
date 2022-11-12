@@ -32,7 +32,7 @@ func printLog(blockName string, r marusia.Request, userSession *models.Session) 
 	logMessage += "In " + blockName + " Block "
 	logMessage += "SessionInfo: " + fmt.Sprint(*userSession) + " "
 	logMessage += "GameStateInfo: " + fmt.Sprint(*userSession.GameState)
-	log.Debug(logMessage)
+	//TODO логи выключил тут log.Debug(logMessage)
 }
 
 // Навык "Угадай музло"
@@ -70,22 +70,6 @@ func main() {
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
 
-	// b, err := os.ReadFile(`../../config/music.json`)
-	// if err != nil {
-	// 	log.Error(err)
-	// }
-	// jsonTracks := string(b)
-	// var allTracks models.TracksPerGenres
-	// if err := json.Unmarshal([]byte(jsonTracks), &allTracks); err != nil {
-	// 	log.Error(err.Error())
-	// 	os.Exit(1)
-	// }
-
-	// trackCount, err := musicU.GetTracksCount()
-	// if err != nil {
-	// 	logrus.Error(err)
-	// }
-	// logrus.Warnf("Track count %d", trackCount)
 	sessions := make(map[string]*models.Session)
 
 	mywh.OnEvent(func(r marusia.Request) (resp marusia.Response) {
@@ -118,7 +102,7 @@ func main() {
 				printLog("NewGameRequest", r, userSession)
 				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				if strings.Contains(r.Request.Command, models.Competition) {
-					userSession.GameState = models.NewCompetitionState
+					userSession.GameState = models.CompetitonRulesState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else if strings.Contains(r.Request.Command, models.LetsPlay) {
 					userSession.GameState = models.ChooseGenreState
@@ -145,7 +129,7 @@ func main() {
 					}
 					str := "Предлагаю следующие жанры:\n"
 					for _, genre := range genres {
-						str += genre + "\n";
+						str += genre + "\n"
 					}
 					resp.Text, resp.TTS = str, str
 				} else if utils.ContainsAny(r.Request.Command, models.Artists) {
@@ -172,26 +156,49 @@ func main() {
 				// логика во время игры
 				printLog("PlayingRequest", r, userSession)
 				if utils.ContainsAny(r.Request.Command, models.ChangeGenre, models.ChangeGenre_, models.AnotherGenre,
-						models.ChangeGame, models.ChangeGame_, models.AnotherGame) {
+					models.ChangeGame, models.ChangeGame_, models.AnotherGame) {
 					// попросили поменять жанр/игру
 					userSession.GameState = models.ChooseGenreState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else if userSession.MusicStarted {
 					// после первого прослушивания
 					if utils.ContainsAny(r.Request.Command, models.Next, models.GiveUp) {
+						logrus.Info("Gave up")
 						// игрок сдается
 						userSession.MusicStarted = false
 						resp.Text, resp.TTS = models.LosePhrase(userSession)
 					} else if utils.ContainsAll(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title),
-							strings.ToLower(userSession.CurrentTrack.Artist)) {
+						strings.ToLower(userSession.CurrentTrack.Artist)) {
+						logrus.Info("Guessed both")
 						// если сразу угадал исполнителя и название
+						switch userSession.CurrentLevel {
+						case models.Two:
+							userSession.CurrentPoints += models.GuessedAllAttempt1
+						case models.Five:
+							userSession.CurrentPoints += models.GuessedAllAttempt2
+						case models.Ten:
+							userSession.CurrentPoints += models.GuessedAllAttempt3
+						}
 						resp.Text, resp.TTS = models.WinPhrase(userSession)
 						userSession.MusicStarted = false
 					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) {
 						// если угадал название
+						logrus.Info("Guessed title")
 						userSession.TitleMatch = true
+						var points float64
+						switch userSession.CurrentLevel {
+						case models.Two:
+							points += models.GuessedTitleAttempt1
+						case models.Five:
+							points += models.GuessedTitleAttempt2
+						case models.Ten:
+							points += models.GuessedTitleAttempt3
+						}
 						if userSession.ArtistMatch || userSession.GameMode == models.ArtistMode {
 							// если до этого угадал исполнителя
+							logrus.Info("Guessed artist before and title now")
+							points /= 2
+							userSession.CurrentPoints += points
 							resp.Text, resp.TTS = models.WinPhrase(userSession)
 							userSession.MusicStarted = false
 						} else {
@@ -199,9 +206,22 @@ func main() {
 						}
 					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
 						// если угадал исполнителя
+						logrus.Info("Guessed artist")
 						userSession.ArtistMatch = true
+						var points float64
+						switch userSession.CurrentLevel {
+						case models.Two:
+							points += models.GuessedArtistAttempt1
+						case models.Five:
+							points += models.GuessedArtistAttempt2
+						case models.Ten:
+							points += models.GuessedArtistAttempt3
+						}
 						if userSession.TitleMatch {
 							// если до этого угадал название
+							logrus.Warn("Guessed title before and artist now")
+							points /= 2
+							userSession.CurrentPoints += points
 							resp.Text, resp.TTS = models.WinPhrase(userSession)
 							userSession.MusicStarted = false
 						} else {
@@ -219,21 +239,16 @@ func main() {
 					resp = game.StartGame(userSession, resp, musicU, rng)
 				}
 				printLog("PlayingResponse", r, userSession)
-			case models.StatusNewCompetition:
-				if strings.Contains(r.Request.Command, models.Competition) {
-					userSession.GameState = models.NewCompetitionState
-					//sessions[r.Session.SessionID] = userSession //TODO я забыл как делать нормально и хочу немного поспать
+			case models.StatusCompetitionRules:
+				if strings.Contains(r.Request.Command, models.Yes) {
+					userSession.GameState = models.ChooseGenreState
+					userSession.CompetitionMode = true
+					userSession.CurrentPoints = 0
+					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
+				} else if strings.Contains(r.Request.Command, models.No) {
+					userSession.GameState = models.NewGameState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				}
-			case models.StatusCompetitionRules:
-				if strings.Contains(r.Request.Command, models.LetsGo) {
-					logrus.Warn("COMPETITION MODE")
-					userSession.GameState = models.CompetitonRulesState
-				}
-			case models.StatusCompetition:
-				userSession.GameState.GameStatus = models.StatusPlaying
-				resp.TTS = "скажите играем"
-				resp.Text = resp.TTS
 			default:
 				resp.Text, resp.TTS = models.IDontUnderstandYouPhrase()
 			}

@@ -29,3 +29,4 @@ cmd/main
 .env
 .gitignore
 .vscode
+*db.sql
