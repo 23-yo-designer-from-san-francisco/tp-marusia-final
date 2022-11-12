@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS music (
 CREATE TABLE IF NOT EXISTS genre_music (
     id serial not null unique,
     genre_id int references "genre"(id) on delete cascade not null,
-    music_id int references "music"(id) on delete cascade not null
+    music_id int references "music"(id) on delete cascade not null,
+    UNIQUE(genre_id, music_id)
 );
 
 
