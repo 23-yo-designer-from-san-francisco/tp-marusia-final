@@ -49,5 +49,7 @@ select music.id, 3 as my_genre_id from music join artist on artist.music_id = mu
 
 update genre set human_title = Lower(title);
 
+------------------------------------------------
+
 
 

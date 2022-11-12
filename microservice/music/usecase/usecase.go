@@ -40,10 +40,6 @@ func validateMusicTrackTitle(title string) (string, bool) {
 	title = strings.Replace(title, "$", "s", -1)
 	title = strings.Replace(title, "é", "e", -1)
 	//Если же что-то с чём-то, то нам такое не нужно
-	normReg := regexp.MustCompile(`^[a-zA-Z ]*$`)
-	if !normReg.MatchString(title) {
-		return "", false
-	}
 	return strings.ToLower(title), true
 }
 
@@ -74,28 +70,24 @@ func validateMusicArtists(artists []string) ([]string, bool) {
 		artist = strings.Replace(artist, "é", "e", -1)
 		reg := regexp.MustCompile(`\([^)]*\)`)
 		artist = reg.ReplaceAllString(artist, "")
-		normReg := regexp.MustCompile(`^[a-zA-Z ]*$`)
-		if !normReg.MatchString(artist) {
-			return []string{}, false
-		}
 		returnResult = append(returnResult, strings.ToLower(artist))
 	}
 	return returnResult, true
 }
 
 func validateMusicTrack(track *models.VKTrack) (*models.VKTrack, bool) {
-	//humanTitle, ok := validateMusicTrackTitle(track.Title)
-	// if !ok {
-	// 	return nil, false
-	// }
-	track.HumanTitle = track.Title
+	humanTitle, ok := validateMusicTrackTitle(track.Title)
+	 if !ok {
+	 	return nil, false
+	 }
+	track.HumanTitle = humanTitle
 	track.Artists = getArtists(track.Artist)
 
-	//humanArtists, ok := validateMusicArtists(track.Artists)
-	// if !ok {
-	// 	return nil, false
-	// }
-	track.HumanArtists = track.Artists
+	humanArtists, ok := validateMusicArtists(track.Artists)
+	if !ok {
+	 	return nil, false
+	}
+	track.HumanArtists = humanArtists
 	return track, true
 }
 
