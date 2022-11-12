@@ -118,7 +118,7 @@ func main() {
 				printLog("NewGameRequest", r, userSession)
 				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				if strings.Contains(r.Request.Command, models.Competition) {
-					userSession.GameState = models.NewCompetitionState
+					userSession.GameState = models.CompetitonRulesState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else if strings.Contains(r.Request.Command, models.LetsPlay) {
 					userSession.GameState = models.ChooseGenreState
@@ -145,7 +145,7 @@ func main() {
 					}
 					str := "Предлагаю следующие жанры:\n"
 					for _, genre := range genres {
-						str += genre + "\n";
+						str += genre + "\n"
 					}
 					resp.Text, resp.TTS = str, str
 				} else if utils.ContainsAny(r.Request.Command, models.Artists) {
@@ -172,7 +172,7 @@ func main() {
 				// логика во время игры
 				printLog("PlayingRequest", r, userSession)
 				if utils.ContainsAny(r.Request.Command, models.ChangeGenre, models.ChangeGenre_, models.AnotherGenre,
-						models.ChangeGame, models.ChangeGame_, models.AnotherGame) {
+					models.ChangeGame, models.ChangeGame_, models.AnotherGame) {
 					// попросили поменять жанр/игру
 					userSession.GameState = models.ChooseGenreState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
@@ -183,7 +183,7 @@ func main() {
 						userSession.MusicStarted = false
 						resp.Text, resp.TTS = models.LosePhrase(userSession)
 					} else if utils.ContainsAll(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title),
-							strings.ToLower(userSession.CurrentTrack.Artist)) {
+						strings.ToLower(userSession.CurrentTrack.Artist)) {
 						// если сразу угадал исполнителя и название
 						resp.Text, resp.TTS = models.WinPhrase(userSession)
 						userSession.MusicStarted = false
@@ -219,21 +219,14 @@ func main() {
 					resp = game.StartGame(userSession, resp, musicU, rng)
 				}
 				printLog("PlayingResponse", r, userSession)
-			case models.StatusNewCompetition:
-				if strings.Contains(r.Request.Command, models.Competition) {
-					userSession.GameState = models.NewCompetitionState
-					//sessions[r.Session.SessionID] = userSession //TODO я забыл как делать нормально и хочу немного поспать
+			case models.StatusCompetitionRules:
+				if strings.Contains(r.Request.Command, models.Yes) {
+					userSession.GameState = models.ChooseGenreState
+					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
+				} else if strings.Contains(r.Request.Command, models.No) {
+					userSession.GameState = models.NewGameState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				}
-			case models.StatusCompetitionRules:
-				if strings.Contains(r.Request.Command, models.LetsGo) {
-					logrus.Warn("COMPETITION MODE")
-					userSession.GameState = models.CompetitonRulesState
-				}
-			case models.StatusCompetition:
-				userSession.GameState.GameStatus = models.StatusPlaying
-				resp.TTS = "скажите играем"
-				resp.Text = resp.TTS
 			default:
 				resp.Text, resp.TTS = models.IDontUnderstandYouPhrase()
 			}
