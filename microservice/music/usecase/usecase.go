@@ -84,18 +84,18 @@ func validateMusicArtists(artists []string) ([]string, bool) {
 }
 
 func validateMusicTrack(track *models.VKTrack) (*models.VKTrack, bool) {
-	humanTitle, ok := validateMusicTrackTitle(track.Title)
-	if !ok {
-		return nil, false
-	}
-	track.HumanTitle = humanTitle
+	//humanTitle, ok := validateMusicTrackTitle(track.Title)
+	// if !ok {
+	// 	return nil, false
+	// }
+	track.HumanTitle = track.Title
 	track.Artists = getArtists(track.Artist)
 
-	humanArtists, ok := validateMusicArtists(track.Artists)
-	if !ok {
-		return nil, false
-	}
-	track.HumanArtists = humanArtists
+	//humanArtists, ok := validateMusicArtists(track.Artists)
+	// if !ok {
+	// 	return nil, false
+	// }
+	track.HumanArtists = track.Artists
 	return track, true
 }
 
