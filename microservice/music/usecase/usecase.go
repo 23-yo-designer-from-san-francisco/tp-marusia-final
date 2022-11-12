@@ -79,8 +79,14 @@ func validateMusicTrack(track *models.VKTrack) (*models.VKTrack, bool) {
 	humanTitle, ok := validateMusicTrackTitle(track.Title)
 	 if !ok {
 	 	return nil, false
-	 }
+	}
+	track.Title = html.UnescapeString(track.Title)
+	reg := regexp.MustCompile(`\([^)]*\)`)
+	track.Title = reg.ReplaceAllString(track.Title, "")
 	track.HumanTitle = humanTitle
+
+	track.Artist = html.UnescapeString(track.Artist)
+	track.Artist = reg.ReplaceAllString(track.Artist, "")
 	track.Artists = getArtists(track.Artist)
 
 	humanArtists, ok := validateMusicArtists(track.Artists)

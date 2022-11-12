@@ -51,5 +51,6 @@ update genre set human_title = Lower(title);
 
 ------------------------------------------------
 
-
+update artist set artist = 'Miyagi & Эндшпиль' where artist = 'Miyagi &amp; Эндшпиль';
+update artist set artist = 'Miyagi & Andy Panda' where artist = 'Miyagi &amp; Andy Panda';
 
