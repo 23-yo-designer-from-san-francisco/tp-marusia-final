@@ -3,7 +3,6 @@ package music
 import "guessTheSongMarusia/models"
 
 type Repository interface {
-	CreateTrack(*models.VKTrack) error
 	GetSongsByArtist(artist string) ([]models.VKTrack, error)
 	GetSongById(id int) (models.VKTrack, error)
 	GetTracksCount() (int, error)
@@ -12,4 +11,5 @@ type Repository interface {
 	GetAllMusic() ([]models.VKTrack, error)
 	GetGenreFromHumanGenre(humanGenre string) (string, error)
 	GetArtistFromHumanArtist(humanArtist string) (string, error)
+	CreateMusic(track *models.VKTrack) (error)
 }

@@ -1,19 +1,29 @@
 package repository
 
 import (
-	"github.com/jmoiron/sqlx"
 	"guessTheSongMarusia/models"
 	log "guessTheSongMarusia/pkg/logger"
+	"strings"
+
+	"github.com/jmoiron/sqlx"
 )
 
 // https://sqlformat.org/
 const (
-	insertTrackQuery = `
-		INSERT INTO music (title, artist, duration_two_url, duration_three_url, duration_five_url, duration_fifteen_url, human_title)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id;
-`
+	insertMusicQuery = `
+		INSERT INTO music (title, artist, duration_two_url, duration_three_url, duration_five_url, duration_fifteen_url)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id;`
+
+	selectArtistIDQuery = `select id from artist where artist = $1;`
+
 	insertArtistQuery     = `insert into artist (music_id, artist, human_artist) values ($1, $2, $3);`
+	insertArtistV2Query   = `insert into artist (music_id, artist) values ($1,$2) returning id;`
+
+	insertArtistMusic = `insert into artist_music (music_id, artist_id) values ($1, $2);`
+	insertHumanTitle = `insert into human_title (music_id, human_title) values ($1, $2);`
+	insertHumanArtist = `insert into human_artist (artist_id, human_artist) values ($1, $2);`
+
 	getSongsByHumanArtist = `
 		SELECT m.title,
 			   m.artist,
@@ -78,38 +88,6 @@ func NewMusicRepository(db *sqlx.DB) *MusicRepository {
 	return &MusicRepository{
 		db: db,
 	}
-}
-
-func (mR *MusicRepository) CreateTrack(track *models.VKTrack) error {
-	tx, err := mR.db.Beginx()
-	if err != nil {
-		log.Error(err)
-		tx.Rollback()
-		return err
-	}
-
-	var trackId int
-	err = tx.QueryRowx(insertTrackQuery,
-		&track.Title, &track.Artist,
-		&track.Duration2, &track.Duration3, &track.Duration5, &track.Duration15,
-		&track.HumanTitle).Scan(&trackId)
-
-	if err != nil {
-		log.Error(err)
-		tx.Rollback()
-		return err
-	}
-	log.Debug(trackId)
-	for index, artist := range track.HumanArtists {
-		_, err = tx.Exec(insertArtistQuery, &trackId, &track.Artists[index], &artist)
-		if err != nil {
-			log.Error(err)
-			tx.Rollback()
-			return err
-		}
-	}
-	tx.Commit()
-	return nil
 }
 
 func (mR *MusicRepository) GetSongsByArtist(artist string) ([]models.VKTrack, error) {
@@ -191,4 +169,81 @@ func (mR *MusicRepository) GetArtistFromHumanArtist(humanArtist string) (string,
 		return "", err
 	}
 	return artist, nil
+}
+
+func (mR *MusicRepository) CreateMusic(track *models.VKTrack) (error) {
+	tx, err := mR.db.Beginx()
+	if err != nil {
+		return err
+	}
+	var musicID int
+	err = tx.QueryRowx(insertMusicQuery, 
+		&track.Title, 
+		&track.Artist, 
+		&track.Duration2, 
+		&track.Duration3, 
+		&track.Duration5, 
+		&track.Duration15).Scan(&musicID)
+
+	//Значит, такой трек уже есть
+	if err != nil {
+		log.Error("Значит трек есть:", err)
+		tx.Rollback()
+		return err
+	}
+
+	//Записываем артистов и человеческих артистов и берём id
+	var ArtistIds []int
+	for artist, humanArtistNames := range track.ArtistsWithHumanArtists {
+		var artistID int
+		err := tx.QueryRowx(selectArtistIDQuery, &artist).Scan(&artistID)
+		//Если артиста нет
+		if err != nil {
+			if !strings.Contains(err.Error(), "no rows in result set") {
+				log.Error("Смотрим ошибку после селекта ", err)
+				tx.Rollback()
+				return err
+			}
+
+			err := tx.QueryRowx(insertArtistV2Query, &musicID, &artist).Scan(&artistID)
+			if err != nil {
+				log.Error("Тут на ошибку с базой данных реагируем артист инсерт ", err)
+				tx.Rollback()
+				return err
+			}
+
+			for _, humanArtist := range humanArtistNames {
+				_, err = tx.Exec(insertHumanArtist, &artistID, humanArtist)
+				if err != nil {
+					log.Error("human_artist", err)
+					tx.Rollback()
+					return err
+				}
+			}
+		}
+		ArtistIds = append(ArtistIds, artistID)
+	}
+
+	//Заполняем много ко многим артист с музыкой
+	for _, artistID := range ArtistIds {
+		_, err := tx.Exec(insertArtistMusic, &musicID, &artistID)
+		if err != nil {
+			log.Error("Тут на ошибку с базой данных реагируем", err)
+			tx.Rollback()
+			return err
+		}
+	}
+
+	//Заполняем человеческие названия по умолчанию(Базовая валидация)
+	for _, humanTitle := range track.HumanTitles {
+		_, err = tx.Exec(insertHumanTitle, &musicID, &humanTitle)
+		if err != nil {
+			log.Error(err)
+			tx.Rollback()
+			return err
+		}
+	} 
+	
+	tx.Commit()
+	return nil;
 }

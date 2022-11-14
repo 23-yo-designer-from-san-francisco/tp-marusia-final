@@ -83,9 +83,8 @@ type VKTrack struct {
 	Duration3    string   `json:"duration_3,omitempty" db:"duration_three_url"`
 	Duration5    string   `json:"duration_5,omitempty" db:"duration_five_url"`
 	Duration15   string   `json:"duration_15,omitempty" db:"duration_fifteen_url"`
-	Artists      []string `json:"-"`
-	HumanTitle   string   `json:"human_title" db:"human_title"`
-	HumanArtists []string `json:"-"`
+	ArtistsWithHumanArtists      map[string][]string `json:"-"`
+	HumanTitles   []string `json:"human_title" db:"human_title"`
 }
 
 type VKTracks struct {

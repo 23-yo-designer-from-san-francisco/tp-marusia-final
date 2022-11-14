@@ -28,72 +28,67 @@ func removeCharacters(input string, characters string) string {
 	}
 
 	return strings.Map(filter, input)
-
 }
 
-func validateMusicTrackTitle(title string) (string, bool) {
-	title = html.UnescapeString(title)
-	title = removeCharacters(title, ".,!?")
+func basicValidation(name string) string {
+	name = removeCharacters(name, ".,!?")
 	//Удаляет скобки и содержимое
 	reg := regexp.MustCompile(`\([^)]*\)`)
-	title = reg.ReplaceAllString(title, "")
-	title = strings.Replace(title, "$", "s", -1)
-	title = strings.Replace(title, "é", "e", -1)
+	name = reg.ReplaceAllString(name, "")
+	name = strings.Replace(name, "$", "s", -1)
+	name = strings.Replace(name, "é", "e", -1)
+	name = strings.Replace(name, "-"," ", -1)
 	//Если же что-то с чём-то, то нам такое не нужно
-	return strings.ToLower(title), true
+	return strings.ToLower(name)
 }
 
-func getArtists(artist string) []string {
-	var returnResult []string
+func validateMusicTrackTitle(title string) ([]string) {
+	var resultTracks []string
+	//Можно добавлять свои валидации(Что удобно по идее) и доставать title
+	title = basicValidation(title)
+
+	resultTracks = append(resultTracks, title)
+	return resultTracks
+}
+
+func validateMusicArtist(artist string) ([]string) {
+	var resultArtists []string
+	artist = basicValidation(artist)
+
+	resultArtists = append(resultArtists, artist)
+	return resultArtists
+}
+
+func getArtists(artist string) map[string][]string {
+	artistsMap := make(map[string][]string)
+	//VK basic format as i see
 	artists := strings.Split(artist, "feat.")
 	for _, artistSplit := range artists {
 		resultArtists := strings.Split(artistSplit, ",")
 		for _, resultArtist := range resultArtists {
+			//На всякий от пробелов
 			if resultArtist[0] == ' ' {
 				resultArtist = resultArtist[1:]
 			}
 			if resultArtist[len(resultArtist)-1] == ' ' {
 				resultArtist = resultArtist[:len(resultArtist)-1]
 			}
-			returnResult = append(returnResult, resultArtist)
+
+			humanArtists :=  validateMusicArtist(resultArtist)
+			artistsMap[resultArtist] = humanArtists
 		}
 	}
-	return returnResult
+	return artistsMap
 }
 
-func validateMusicArtists(artists []string) ([]string, bool) {
-	var returnResult []string
-	for _, artist := range artists {
-		artist = html.UnescapeString(artist)
-		artist = removeCharacters(artist, "!?")
-		artist = strings.Replace(artist, "$", "s", -1)
-		artist = strings.Replace(artist, "é", "e", -1)
-		reg := regexp.MustCompile(`\([^)]*\)`)
-		artist = reg.ReplaceAllString(artist, "")
-		returnResult = append(returnResult, strings.ToLower(artist))
-	}
-	return returnResult, true
-}
+
 
 func validateMusicTrack(track *models.VKTrack) (*models.VKTrack, bool) {
-	humanTitle, ok := validateMusicTrackTitle(track.Title)
-	 if !ok {
-	 	return nil, false
-	}
 	track.Title = html.UnescapeString(track.Title)
-	reg := regexp.MustCompile(`\([^)]*\)`)
-	track.Title = reg.ReplaceAllString(track.Title, "")
-	track.HumanTitle = humanTitle
+	track.HumanTitles = validateMusicTrackTitle(track.Title)
 
 	track.Artist = html.UnescapeString(track.Artist)
-	track.Artist = reg.ReplaceAllString(track.Artist, "")
-	track.Artists = getArtists(track.Artist)
-
-	humanArtists, ok := validateMusicArtists(track.Artists)
-	if !ok {
-	 	return nil, false
-	}
-	track.HumanArtists = humanArtists
+	track.ArtistsWithHumanArtists = getArtists(track.Artist)
 	return track, true
 }
 
@@ -103,9 +98,9 @@ func (mU *MusicUsecase) CreateAllMusic(Tracks []models.VKTrack) error {
 		if !ok {
 			continue
 		}
-		log.Debug(track.Artists)
-		log.Debug(track.HumanArtists)
-		err := mU.musicRepository.CreateTrack(track)
+		log.Debug(track.Title)
+		log.Debug(track.Artist)
+		err := mU.musicRepository.CreateMusic(track)
 		if err != nil {
 			log.Error()
 		}
