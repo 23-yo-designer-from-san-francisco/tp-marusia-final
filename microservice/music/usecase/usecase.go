@@ -37,58 +37,71 @@ func basicValidation(name string) string {
 	name = reg.ReplaceAllString(name, "")
 	name = strings.Replace(name, "$", "s", -1)
 	name = strings.Replace(name, "é", "e", -1)
-	name = strings.Replace(name, "-"," ", -1)
+	name = strings.Replace(name, "-", " ", -1)
 	//Если же что-то с чём-то, то нам такое не нужно
 	return strings.ToLower(name)
 }
 
-func validateMusicTrackTitle(title string) ([]string) {
-	var resultTracks []string
-	//Можно добавлять свои валидации(Что удобно по идее) и доставать title
-	title = basicValidation(title)
+func ampersandReplacing(name string) []string {
+	var resultNames []string
+	if strings.Contains(name, "&") {
+		name = strings.ToLower(name)
+		resultNames = append(resultNames, strings.Replace(name, "&", "and", -1))
+		resultNames = append(resultNames, strings.Replace(name, "&", "и", -1))
+		resultNames = append(resultNames, strings.Replace(name, " &", "", -1))
+	}
+	return resultNames
+}
 
-	resultTracks = append(resultTracks, title)
+func validateMusicTrackTitle(title string) []string {
+	var resultTracks []string
+	resultTracks = append(resultTracks, basicValidation(title))
+	resultTracks = append(resultTracks, ampersandReplacing(title)...)
 	return resultTracks
 }
 
-func validateMusicArtist(artist string) ([]string) {
+func validateMusicArtist(artist string) []string {
 	var resultArtists []string
-	artist = basicValidation(artist)
-
-	resultArtists = append(resultArtists, artist)
+	resultArtists = append(resultArtists, basicValidation(artist))
+	resultArtists = append(resultArtists, ampersandReplacing(artist)...)
 	return resultArtists
 }
 
-func getArtists(artist string) map[string][]string {
-	artistsMap := make(map[string][]string)
+func getArtists(artist string, currentMap map[string][]string) map[string][]string {
+	var artistsMap map[string][]string
+	if currentMap == nil {
+		artistsMap = make(map[string][]string)
+	} else {
+		artistsMap = currentMap
+	}
 	//VK basic format as i see
 	artists := strings.Split(artist, "feat.")
 	for _, artistSplit := range artists {
-		resultArtists := strings.Split(artistSplit, ",")
+		separator := ","
+		if strings.Contains(artistSplit, "&") {
+			separator = "&"
+		}
+		resultArtists := strings.Split(artistSplit, separator)
 		for _, resultArtist := range resultArtists {
 			//На всякий от пробелов
-			if resultArtist[0] == ' ' {
-				resultArtist = resultArtist[1:]
+			resultArtist = strings.TrimSpace(resultArtist)
+			humanArtists := validateMusicArtist(resultArtist)
+			if currentValue, ok := artistsMap[resultArtist]; ok {
+				artistsMap[resultArtist] = append(currentValue, humanArtists...)
+			} else {
+				artistsMap[resultArtist] = humanArtists
 			}
-			if resultArtist[len(resultArtist)-1] == ' ' {
-				resultArtist = resultArtist[:len(resultArtist)-1]
-			}
-
-			humanArtists :=  validateMusicArtist(resultArtist)
-			artistsMap[resultArtist] = humanArtists
 		}
 	}
 	return artistsMap
 }
 
-
-
 func validateMusicTrack(track *models.VKTrack) (*models.VKTrack, bool) {
 	track.Title = html.UnescapeString(track.Title)
-	track.HumanTitles = validateMusicTrackTitle(track.Title)
+	track.HumanTitles = append(track.HumanTitles, validateMusicTrackTitle(track.Title)...)
 
 	track.Artist = html.UnescapeString(track.Artist)
-	track.ArtistsWithHumanArtists = getArtists(track.Artist)
+	track.ArtistsWithHumanArtists = getArtists(track.Artist, track.ArtistsWithHumanArtists)
 	return track, true
 }
 
@@ -124,7 +137,7 @@ func (mU *MusicUsecase) GetGenres() ([]string, error) {
 	return mU.musicRepository.GetGenres()
 }
 
-func (mU *MusicUsecase) GetMusicByGenre(genre string) ([]models.VKTrack, error){
+func (mU *MusicUsecase) GetMusicByGenre(genre string) ([]models.VKTrack, error) {
 	return mU.musicRepository.GetMusicByGenre(genre)
 }
 

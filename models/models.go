@@ -94,12 +94,12 @@ type VKTrack struct {
 	Duration3               string              `json:"duration_3,omitempty" db:"duration_three_url"`
 	Duration5               string              `json:"duration_5,omitempty" db:"duration_five_url"`
 	Duration15              string              `json:"duration_15,omitempty" db:"duration_fifteen_url"`
-	ArtistsWithHumanArtists map[string][]string `json:"-"`
+	ArtistsWithHumanArtists map[string][]string `json:"human_artists"`
 	HumanTitles             pq.StringArray      `json:"human_titles" db:"human_titles"`
 }
 
 func (track *VKTrack) checkTitleInAnswer(answer string) bool {
-	if !utils.ContainsAny(answer, track.HumanTitles...) {
+	if !(utils.ContainsAny(answer, track.Title) && utils.ContainsAny(answer, track.HumanTitles...)) {
 		log.Debug("Checking by Levenshtein")
 		lev := metrics.NewLevenshtein()
 		for _, title := range track.HumanTitles {
@@ -120,8 +120,8 @@ func (track *VKTrack) checkTitleInAnswer(answer string) bool {
 }
 
 func (track *VKTrack) checkArtistsInAnswer(answer string) bool {
-	for _, humanNames := range track.ArtistsWithHumanArtists {
-		if utils.ContainsAny(answer, humanNames...) {
+	for artistName, humanNames := range track.ArtistsWithHumanArtists {
+		if utils.ContainsAny(answer, artistName) || utils.ContainsAny(answer, humanNames...) {
 			return true
 		}
 	}
