@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/SevereCloud/vksdk/v2 v2.15.0
+	github.com/adrg/strutil v0.3.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/jackc/pgx/v4 v4.17.2
 	github.com/jmoiron/sqlx v1.3.5

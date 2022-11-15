@@ -167,72 +167,71 @@ func main() {
 						// игрок сдается
 						userSession.MusicStarted = false
 						resp.Text, resp.TTS = models.LosePhrase(userSession)
-					} else if utils.ContainsAll(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title),
-						strings.ToLower(userSession.CurrentTrack.Artist)) {
-						logrus.Info("Guessed both")
-						// если сразу угадал исполнителя и название
-						switch userSession.CurrentLevel {
-						case models.Two:
-							userSession.CurrentPoints += models.GuessedAllAttempt1
-						case models.Five:
-							userSession.CurrentPoints += models.GuessedAllAttempt2
-						case models.Ten:
-							userSession.CurrentPoints += models.GuessedAllAttempt3
-						}
-						resp.Text, resp.TTS = models.WinPhrase(userSession)
-						userSession.MusicStarted = false
-					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Title)) {
-						// если угадал название
-						logrus.Info("Guessed title")
-						userSession.TitleMatch = true
-						var points float64
-						switch userSession.CurrentLevel {
-						case models.Two:
-							points += models.GuessedTitleAttempt1
-						case models.Five:
-							points += models.GuessedTitleAttempt2
-						case models.Ten:
-							points += models.GuessedTitleAttempt3
-						}
-						if userSession.ArtistMatch || userSession.GameMode == models.ArtistMode {
-							// если до этого угадал исполнителя
-							logrus.Info("Guessed artist before and title now")
-							points /= 2
-							userSession.CurrentPoints += points
-							resp.Text, resp.TTS = models.WinPhrase(userSession)
-							userSession.MusicStarted = false
-						} else {
-							resp = game.CloseAnswerPlay(userSession, resp)
-						}
-					} else if strings.Contains(r.Request.Command, strings.ToLower(userSession.CurrentTrack.Artist)) {
-						// если угадал исполнителя
-						logrus.Info("Guessed artist")
-						userSession.ArtistMatch = true
-						var points float64
-						switch userSession.CurrentLevel {
-						case models.Two:
-							points += models.GuessedArtistAttempt1
-						case models.Five:
-							points += models.GuessedArtistAttempt2
-						case models.Ten:
-							points += models.GuessedArtistAttempt3
-						}
-						if userSession.TitleMatch {
-							// если до этого угадал название
-							logrus.Warn("Guessed title before and artist now")
-							points /= 2
-							userSession.CurrentPoints += points
-							resp.Text, resp.TTS = models.WinPhrase(userSession)
-							userSession.MusicStarted = false
-						} else {
-							resp = game.CloseAnswerPlay(userSession, resp)
-						}
-					} else if userSession.NextLevelLoses {
-						// если все попытки провалились
-						userSession.MusicStarted = false
-						resp.Text, resp.TTS = models.LosePhrase(userSession)
 					} else {
-						resp = game.WrongAnswerPlay(userSession, resp)
+						matchTitle, matchArtists := userSession.CurrentTrack.CheckUserAnswer(r.Request.Command)
+						if matchTitle && matchArtists {
+							logrus.Info("Guessed both")
+							switch userSession.CurrentLevel {
+							case models.Two:
+								userSession.CurrentPoints += models.GuessedAllAttempt1
+							case models.Five:
+								userSession.CurrentPoints += models.GuessedAllAttempt2
+							case models.Ten:
+								userSession.CurrentPoints += models.GuessedAllAttempt3
+							}
+							resp.Text, resp.TTS = models.WinPhrase(userSession)
+							userSession.MusicStarted = false
+						} else if matchTitle {
+							logrus.Info("Guessed title")
+							userSession.TitleMatch = true
+							var points float64
+							switch userSession.CurrentLevel {
+							case models.Two:
+								points += models.GuessedTitleAttempt1
+							case models.Five:
+								points += models.GuessedTitleAttempt2
+							case models.Ten:
+								points += models.GuessedTitleAttempt3
+							}
+							if userSession.ArtistMatch || userSession.GameMode == models.ArtistMode {
+								// если до этого угадал исполнителя
+								logrus.Info("Guessed artist before and title now")
+								points /= 2
+								userSession.CurrentPoints += points
+								resp.Text, resp.TTS = models.WinPhrase(userSession)
+								userSession.MusicStarted = false
+							} else {
+								resp = game.CloseAnswerPlay(userSession, resp)
+							}
+						} else if matchArtists {
+							logrus.Info("Guessed artist")
+							userSession.ArtistMatch = true
+							var points float64
+							switch userSession.CurrentLevel {
+							case models.Two:
+								points += models.GuessedArtistAttempt1
+							case models.Five:
+								points += models.GuessedArtistAttempt2
+							case models.Ten:
+								points += models.GuessedArtistAttempt3
+							}
+							if userSession.TitleMatch {
+								// если до этого угадал название
+								logrus.Warn("Guessed title before and artist now")
+								points /= 2
+								userSession.CurrentPoints += points
+								resp.Text, resp.TTS = models.WinPhrase(userSession)
+								userSession.MusicStarted = false
+							} else {
+								resp = game.CloseAnswerPlay(userSession, resp)
+							}
+						} else if userSession.NextLevelLoses {
+							// если все попытки провалились
+							userSession.MusicStarted = false
+							resp.Text, resp.TTS = models.LosePhrase(userSession)
+						} else {
+							resp = game.WrongAnswerPlay(userSession, resp)
+						}
 					}
 				} else {
 					// перед первым или после последнего прослушивания
