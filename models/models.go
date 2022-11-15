@@ -1,5 +1,7 @@
 package models
 
+import "github.com/lib/pq"
+
 type Duration int64
 
 const (
@@ -77,6 +79,7 @@ type TracksPerGenres struct {
 }
 
 type VKTrack struct {
+	ID 			 int   `db:"id"`
 	Title        string   `json:"title,omitempty" db:"title"`
 	Artist       string   `json:"artist,omitempty" db:"artist"`
 	Duration2    string   `json:"duration_2,omitempty" db:"duration_two_url"`
@@ -84,7 +87,7 @@ type VKTrack struct {
 	Duration5    string   `json:"duration_5,omitempty" db:"duration_five_url"`
 	Duration15   string   `json:"duration_15,omitempty" db:"duration_fifteen_url"`
 	ArtistsWithHumanArtists      map[string][]string `json:"-"`
-	HumanTitles   []string `json:"human_title" db:"human_title"`
+	HumanTitles   pq.StringArray `json:"human_titles" db:"human_titles"`
 }
 
 type VKTracks struct {

@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/jackc/pgx/v4 v4.17.2
 	github.com/jmoiron/sqlx v1.3.5
+	github.com/lib/pq v1.10.2
 	github.com/seehuhn/mt19937 v1.0.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.13.0

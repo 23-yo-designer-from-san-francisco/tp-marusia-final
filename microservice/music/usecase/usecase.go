@@ -100,7 +100,7 @@ func (mU *MusicUsecase) CreateAllMusic(Tracks []models.VKTrack) error {
 		}
 		log.Debug(track.Title)
 		log.Debug(track.Artist)
-		err := mU.musicRepository.CreateMusic(track)
+		err := mU.musicRepository.CreateTrack(track)
 		if err != nil {
 			log.Error()
 		}

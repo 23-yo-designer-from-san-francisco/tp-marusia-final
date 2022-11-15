@@ -6,23 +6,31 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 // https://sqlformat.org/
 const (
-	insertMusicQuery = `
-		INSERT INTO music (title, artist, duration_two_url, duration_three_url, duration_five_url, duration_fifteen_url)
-		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id;`
+	insertMusicQueryV2 = `
+		INSERT INTO music (title, artist, duration_two_url, duration_three_url, duration_five_url, duration_fifteen_url, human_titles)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id;
+	`
 
 	selectArtistIDQuery = `select id from artist where artist = $1;`
 
 	insertArtistQuery     = `insert into artist (music_id, artist, human_artist) values ($1, $2, $3);`
 	insertArtistV2Query   = `insert into artist (music_id, artist) values ($1,$2) returning id;`
+	insertArtistQueryV2   = `insert into artist (artist, human_artists) values ($1, $2) returning id;`
 
 	insertArtistMusic = `insert into artist_music (music_id, artist_id) values ($1, $2);`
 	insertHumanTitle = `insert into human_title (music_id, human_title) values ($1, $2);`
 	insertHumanArtist = `insert into human_artist (artist_id, human_artist) values ($1, $2);`
+
+	selectArtistsInfoByMusicId = `
+		select a.artist, a.human_artists from artist_music as am
+		join artist as a on a.id = am.artist_id
+		where am.music_id = $1;`
 
 	getSongsByHumanArtist = `
 		SELECT m.title,
@@ -51,6 +59,7 @@ const (
 	getTracksCount = `SELECT max(id) FROM music;`
 
 	getGenres = `select title from genre;`
+	
 	getMusicByGenre = `select 
 		m.title,
 		m.artist,
@@ -58,7 +67,7 @@ const (
 		m.duration_three_url,
 		m.duration_five_url,
 		m.duration_fifteen_url,
-		m.human_title
+		m.human_titles
 		from music as m 
 			join genre_music as gm on m.id = gm.music_id 
 			join genre as g on g.id = gm.genre_id 
@@ -69,15 +78,18 @@ const (
 	getArtistFromHumanArtist = `select distinct artist from artist where human_artist = $1`;
 	
 	getAllSongs = `
-		SELECT m.title,
+		SELECT 
+				m.id,
+				m.title,
 				m.artist,
 				m.duration_two_url,
 				m.duration_three_url,
 				m.duration_five_url,
 				m.duration_fifteen_url,
-				m.human_title
+				m.human_titles
 		FROM music AS m;
 	`
+	getAllSongsWithoutArtists = `SELECT * FROM music as m;`
 )
 
 type MusicRepository struct {
@@ -131,26 +143,6 @@ func (mR *MusicRepository) GetGenres() ([]string, error) {
 	return genres, nil
 }
 
-func (mR *MusicRepository) GetMusicByGenre(genre string) ([]models.VKTrack, error) {
-	var VKTracks = []models.VKTrack{}
-	err := mR.db.Select(&VKTracks, getMusicByGenre, genre)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-	return VKTracks, nil
-}
-
-func (mR *MusicRepository) GetAllMusic() ([]models.VKTrack, error) {
-	var VKTracks = []models.VKTrack{}
-	err := mR.db.Select(&VKTracks, getAllSongs)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-	return VKTracks, nil
-}
-
 func (mR *MusicRepository) GetGenreFromHumanGenre(humanGenre string) (string, error) {
 	var genre string
 	err := mR.db.Get(&genre, getGenreFromHumanGenre, humanGenre)
@@ -171,79 +163,118 @@ func (mR *MusicRepository) GetArtistFromHumanArtist(humanArtist string) (string,
 	return artist, nil
 }
 
-func (mR *MusicRepository) CreateMusic(track *models.VKTrack) (error) {
+func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
 	tx, err := mR.db.Beginx()
 	if err != nil {
+		log.Error(err)
+		tx.Rollback()
 		return err
 	}
+
 	var musicID int
-	err = tx.QueryRowx(insertMusicQuery, 
+	err = tx.QueryRowx(insertMusicQueryV2, 
 		&track.Title, 
 		&track.Artist, 
 		&track.Duration2, 
 		&track.Duration3, 
 		&track.Duration5, 
-		&track.Duration15).Scan(&musicID)
+		&track.Duration15,
+		&track.HumanTitles).Scan(&musicID)
 
-	//Значит, такой трек уже есть
 	if err != nil {
-		log.Error("Значит трек есть:", err)
+		//Если такой трек есть уже или же база упала можем выходить
+		log.Error(err)
 		tx.Rollback()
 		return err
 	}
-
-	//Записываем артистов и человеческих артистов и берём id
-	var ArtistIds []int
-	for artist, humanArtistNames := range track.ArtistsWithHumanArtists {
+	
+	for artist, humanArtists := range track.ArtistsWithHumanArtists {
 		var artistID int
-		err := tx.QueryRowx(selectArtistIDQuery, &artist).Scan(&artistID)
-		//Если артиста нет
+		err := tx.Get(&artistID, selectArtistIDQuery, artist)
 		if err != nil {
+			//Проверка, не упала ли база
 			if !strings.Contains(err.Error(), "no rows in result set") {
-				log.Error("Смотрим ошибку после селекта ", err)
+				log.Error("Смотрим ошибку", err)
 				tx.Rollback()
 				return err
 			}
+			//Если такого артиста нет
+			err = tx.QueryRow(insertArtistQueryV2,
+				&artist,
+				&humanArtists).Scan(&artistID)
 
-			err := tx.QueryRowx(insertArtistV2Query, &musicID, &artist).Scan(&artistID)
 			if err != nil {
-				log.Error("Тут на ошибку с базой данных реагируем артист инсерт ", err)
+				log.Error("Смотрим ошибку", err)
 				tx.Rollback()
 				return err
-			}
-
-			for _, humanArtist := range humanArtistNames {
-				_, err = tx.Exec(insertHumanArtist, &artistID, humanArtist)
-				if err != nil {
-					log.Error("human_artist", err)
-					tx.Rollback()
-					return err
-				}
 			}
 		}
-		ArtistIds = append(ArtistIds, artistID)
-	}
-
-	//Заполняем много ко многим артист с музыкой
-	for _, artistID := range ArtistIds {
-		_, err := tx.Exec(insertArtistMusic, &musicID, &artistID)
+		//Заполняем связь много ко многим
+		_, err = tx.Exec(insertArtistMusic, &musicID, &artistID)
 		if err != nil {
-			log.Error("Тут на ошибку с базой данных реагируем", err)
+			log.Error("Смотрим ошибку", err)
 			tx.Rollback()
 			return err
 		}
 	}
 
-	//Заполняем человеческие названия по умолчанию(Базовая валидация)
-	for _, humanTitle := range track.HumanTitles {
-		_, err = tx.Exec(insertHumanTitle, &musicID, &humanTitle)
+	tx.Commit()
+	return nil
+}
+
+func (mR *MusicRepository) GetArtistsInfoByMusicID (musicID int) (map[string][]string, error) {
+	type artistInfo struct {
+		Artist string `db:"artist"`
+		HumanArtists pq.StringArray `db:"human_artists"`
+	}
+
+	var artistStructs []artistInfo
+	log.Debug("MusicID = ", musicID)
+	err := mR.db.Select(&artistStructs, selectArtistsInfoByMusicId, &musicID)
+	if err != nil {
+		log.Error("Смотрим ошибку", err)
+		return nil, err
+	}
+	log.Debug("artistStructs = ", artistStructs)
+	artistsMap := make(map[string][]string)
+	for _, artist := range artistStructs {
+		log.Debug(artist)
+		artistsMap[artist.Artist] = artist.HumanArtists
+	}
+	return artistsMap, nil
+}
+
+func (mR *MusicRepository) GetAllMusic() ([]models.VKTrack, error) {
+	var VKTracks = []models.VKTrack{}
+	err := mR.db.Select(&VKTracks, getAllSongs)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	for index, track := range VKTracks {
+		VKTracks[index].ArtistsWithHumanArtists, err = mR.GetArtistsInfoByMusicID(track.ID)
 		if err != nil {
 			log.Error(err)
-			tx.Rollback()
-			return err
+			return nil, err
 		}
-	} 
-	
-	tx.Commit()
-	return nil;
+		log.Debug("Track Map ", track.ArtistsWithHumanArtists)
+	}
+	return VKTracks, nil
+}
+
+func (mR *MusicRepository) GetMusicByGenre(genre string) ([]models.VKTrack, error) {
+	var VKTracks = []models.VKTrack{}
+	err := mR.db.Select(&VKTracks, getMusicByGenre, genre)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	for index, track := range VKTracks {
+		VKTracks[index].ArtistsWithHumanArtists, err = mR.GetArtistsInfoByMusicID(track.ID)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+	}
+	return VKTracks, nil
 }

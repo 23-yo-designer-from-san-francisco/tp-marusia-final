@@ -14,6 +14,7 @@ func StartGame(userSession *models.Session, resp marusia.Response, mU *usecase.M
 	//TODO userSession.CurrentGenre тут выбрать жанр нужный
 	userSession.CurrentTrack = ChooseTrack(userSession, mU, rng)
 	fmt.Println("Selected track", userSession.CurrentTrack)
+	fmt.Println("Selected track Artists", userSession.CurrentTrack.ArtistsWithHumanArtists)
 	userSession.GameState = models.PlayingState
 	userSession.MusicStarted = true
 	userSession.CurrentLevel = models.Two
