@@ -136,6 +136,6 @@ func (mU *MusicUsecase) GetGenreFromHumanGenre(humanGenre string) (string, error
 	return mU.musicRepository.GetGenreFromHumanGenre(humanGenre)
 }
 
-func (mU *MusicUsecase) GetArtistFromHumanArtist(humanArtist string) (string, error) {
-	return mU.musicRepository.GetArtistFromHumanArtist(humanArtist)
-}
+// func (mU *MusicUsecase) GetArtistFromHumanArtist(humanArtist string) (string, error) {
+// 	return mU.musicRepository.GetArtistFromHumanArtist(humanArtist)
+// }

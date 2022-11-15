@@ -167,18 +167,19 @@ func SelectArtist(userSession *models.Session, command string, resp marusia.Resp
 		return resp
 	}
 
-	artist, err := mU.GetArtistFromHumanArtist(command)
-	if err != nil {
-		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
-		fmt.Println(err.Error())
-		resp.Text, resp.TTS = str, str
-		return resp
-	}
+	// artist, err := mU.GetArtistFromHumanArtist(command)
+	// if err != nil {
+	// 	str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
+	// 	fmt.Println(err.Error())
+	// 	resp.Text, resp.TTS = str, str
+	// 	return resp
+	// }
 
 	sessions[sessionID] = userSession
 	userSession.TrackCounter = 0
 	userSession.GameMode = models.ArtistMode
-	userSession.CurrentGenre = artist
+	//ХЗ
+	userSession.CurrentGenre = "Игра по артисту"
 	userSession.CurrentPlaylist = tracks
 	resp = StartGame(userSession, resp, mU, rng)
 	return resp

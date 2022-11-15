@@ -32,18 +32,19 @@ const (
 		join artist as a on a.id = am.artist_id
 		where am.music_id = $1;`
 
-	getSongsByHumanArtist = `
-		SELECT m.title,
-			   m.artist,
-			   m.duration_two_url,
-			   m.duration_three_url,
-			   m.duration_five_url,
-			   m.duration_fifteen_url,
-			   m.human_title
-		FROM music AS m
-		JOIN artist ON artist.music_id = m.id
-		WHERE artist.human_artist = $1;
-	`
+	getSongsByHumanArtist = `select 
+		m.id,
+		m.title,
+		m.artist,
+		m.duration_two_url,
+		m.duration_three_url,
+		m.duration_five_url,
+		m.duration_fifteen_url,
+		m.human_titles from music as m
+		join artist_music as am on m.id = am.music_id 
+		join artist as a on a.id = am.artist_id
+		where $1 = ANY(a.human_artists);`
+
 	getSongById = `
 		SELECT m.title,
 			   m.artist,
@@ -102,16 +103,6 @@ func NewMusicRepository(db *sqlx.DB) *MusicRepository {
 	}
 }
 
-func (mR *MusicRepository) GetSongsByArtist(artist string) ([]models.VKTrack, error) {
-	var VKTracks = []models.VKTrack{}
-	err := mR.db.Select(&VKTracks, getSongsByHumanArtist, artist)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-	return VKTracks, nil
-}
-
 func (mR *MusicRepository) GetSongById(id int) (models.VKTrack, error) {
 	var VKTrack models.VKTrack
 	err := mR.db.Get(&VKTrack, getSongById, id)
@@ -153,15 +144,15 @@ func (mR *MusicRepository) GetGenreFromHumanGenre(humanGenre string) (string, er
 	return genre, nil
 }
 
-func (mR *MusicRepository) GetArtistFromHumanArtist(humanArtist string) (string, error) {
-	var artist string
-	err := mR.db.Get(&artist, getArtistFromHumanArtist, humanArtist)
-	if err != nil {
-		log.Error(err)
-		return "", err
-	}
-	return artist, nil
-}
+// func (mR *MusicRepository) GetArtistFromHumanArtist(humanArtist string) (string, error) {
+// 	var artist string
+// 	err := mR.db.Get(&artist, getArtistFromHumanArtist, humanArtist)
+// 	if err != nil {
+// 		log.Error(err)
+// 		return "", err
+// 	}
+// 	return artist, nil
+// }
 
 func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
 	tx, err := mR.db.Beginx()
@@ -275,6 +266,25 @@ func (mR *MusicRepository) GetMusicByGenre(genre string) ([]models.VKTrack, erro
 			log.Error(err)
 			return nil, err
 		}
+	}
+	return VKTracks, nil
+}
+
+func (mR *MusicRepository) GetSongsByArtist(artist string) ([]models.VKTrack, error) {
+	var VKTracks = []models.VKTrack{}
+	err := mR.db.Select(&VKTracks, getSongsByHumanArtist, artist)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	for index, track := range VKTracks {
+		VKTracks[index].ArtistsWithHumanArtists, err = mR.GetArtistsInfoByMusicID(track.ID)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+		log.Debug("Track Map ", track.ArtistsWithHumanArtists)
 	}
 	return VKTracks, nil
 }
