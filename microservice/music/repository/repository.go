@@ -103,27 +103,6 @@ func NewMusicRepository(db *sqlx.DB) *MusicRepository {
 	}
 }
 
-func (mR *MusicRepository) GetSongById(id int) (models.VKTrack, error) {
-	var VKTrack models.VKTrack
-	err := mR.db.Get(&VKTrack, getSongById, id)
-	if err != nil {
-		log.Error(err)
-		return models.VKTrack{}, err
-	}
-	return VKTrack, nil
-}
-
-func (mR *MusicRepository) GetTracksCount() (int, error) {
-	count := 0
-	err := mR.db.Get(&count, getTracksCount)
-
-	if err != nil {
-		log.Error(err)
-		return -1, err
-	}
-	return count, nil
-}
-
 func (mR *MusicRepository) GetGenres() ([]string, error) {
 	var genres = []string{}
 	err := mR.db.Select(&genres, getGenres)
@@ -143,16 +122,6 @@ func (mR *MusicRepository) GetGenreFromHumanGenre(humanGenre string) (string, er
 	}
 	return genre, nil
 }
-
-// func (mR *MusicRepository) GetArtistFromHumanArtist(humanArtist string) (string, error) {
-// 	var artist string
-// 	err := mR.db.Get(&artist, getArtistFromHumanArtist, humanArtist)
-// 	if err != nil {
-// 		log.Error(err)
-// 		return "", err
-// 	}
-// 	return artist, nil
-// }
 
 func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
 	tx, err := mR.db.Beginx()
