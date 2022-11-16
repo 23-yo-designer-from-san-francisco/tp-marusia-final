@@ -19,12 +19,12 @@ const (
 
 	selectArtistIDQuery = `select id from artist where artist = $1;`
 
-	insertArtistQuery     = `insert into artist (music_id, artist, human_artist) values ($1, $2, $3);`
-	insertArtistV2Query   = `insert into artist (music_id, artist) values ($1,$2) returning id;`
-	insertArtistQueryV2   = `insert into artist (artist, human_artists) values ($1, $2) returning id;`
+	insertArtistQuery   = `insert into artist (music_id, artist, human_artist) values ($1, $2, $3);`
+	insertArtistV2Query = `insert into artist (music_id, artist) values ($1,$2) returning id;`
+	insertArtistQueryV2 = `insert into artist (artist, human_artists) values ($1, $2) returning id;`
 
 	insertArtistMusic = `insert into artist_music (music_id, artist_id) values ($1, $2);`
-	insertHumanTitle = `insert into human_title (music_id, human_title) values ($1, $2);`
+	insertHumanTitle  = `insert into human_title (music_id, human_title) values ($1, $2);`
 	insertHumanArtist = `insert into human_artist (artist_id, human_artist) values ($1, $2);`
 
 	selectArtistsInfoByMusicId = `
@@ -60,8 +60,9 @@ const (
 	getTracksCount = `SELECT max(id) FROM music;`
 
 	getGenres = `select title from genre;`
-	
+
 	getMusicByGenre = `select 
+    	m.id,
 		m.title,
 		m.artist,
 		m.duration_two_url,
@@ -73,12 +74,11 @@ const (
 			join genre_music as gm on m.id = gm.music_id 
 			join genre as g on g.id = gm.genre_id 
 			where g.human_title = $1;`
-	
+
 	getGenreFromHumanGenre = `select title from genre where human_title = $1;`
 
-	getArtistFromHumanArtist = `select distinct artist from artist where human_artist = $1`;
-	
-	getAllSongs = `
+	getArtistFromHumanArtist = `select distinct artist from artist where human_artist = $1`
+	getAllSongs              = `
 		SELECT 
 				m.id,
 				m.title,
@@ -123,7 +123,7 @@ func (mR *MusicRepository) GetGenreFromHumanGenre(humanGenre string) (string, er
 	return genre, nil
 }
 
-func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
+func (mR *MusicRepository) CreateTrack(track *models.VKTrack) error {
 	tx, err := mR.db.Beginx()
 	if err != nil {
 		log.Error(err)
@@ -132,12 +132,12 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
 	}
 
 	var musicID int
-	err = tx.QueryRowx(insertMusicQueryV2, 
-		&track.Title, 
-		&track.Artist, 
-		&track.Duration2, 
-		&track.Duration3, 
-		&track.Duration5, 
+	err = tx.QueryRowx(insertMusicQueryV2,
+		&track.Title,
+		&track.Artist,
+		&track.Duration2,
+		&track.Duration3,
+		&track.Duration5,
 		&track.Duration15,
 		&track.HumanTitles).Scan(&musicID)
 
@@ -147,7 +147,7 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
 		tx.Rollback()
 		return err
 	}
-	
+
 	for artist, humanArtists := range track.ArtistsWithHumanArtists {
 		var artistID int
 		err := tx.Get(&artistID, selectArtistIDQuery, artist)
@@ -182,9 +182,9 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
 	return nil
 }
 
-func (mR *MusicRepository) GetArtistsInfoByMusicID (musicID int) (map[string][]string, error) {
+func (mR *MusicRepository) GetArtistsInfoByMusicID(musicID int) (map[string][]string, error) {
 	type artistInfo struct {
-		Artist string `db:"artist"`
+		Artist       string         `db:"artist"`
 		HumanArtists pq.StringArray `db:"human_artists"`
 	}
 
