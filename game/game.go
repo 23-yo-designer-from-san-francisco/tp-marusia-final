@@ -64,9 +64,9 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 		preWin = "Вы угадали название! А ^см`ожете^ исполнителя? "
 	} else if userSession.TrackCounter == 1 && userSession.CurrentLevel == models.Two {
 		if userSession.GameMode == models.ArtistMode {
-			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Вы можете в любой момент «Cменить игру», «Cменить исполнителя» или «Cменить жанр». ", userSession.CurrentGenre)
+			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
 		} else {
-			preWin = fmt.Sprintf("Вы выбрали жанр «%s». Вы можете в любой момент «Cменить игру», «Cменить исполнителя» или «Cменить жанр». ", userSession.CurrentGenre)
+			preWin = fmt.Sprintf("Вы выбрали жанр «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
 		}
 	}
 
