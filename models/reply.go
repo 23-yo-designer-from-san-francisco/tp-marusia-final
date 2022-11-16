@@ -26,21 +26,26 @@ func GetScoreText(userSession *Session) string {
 
 // Если человек не смог угадать
 func LosePhrase(userSession *Session) (string, string) {
-	var str string
+	var textString string
+	var ttsString string
 	userSession.Fails += 1
 	if userSession.Fails >= 3 {
-		str = fmt.Sprintf("%s %s %s %s %s %s", DontGuess, IWillSayTheAnswer,
+		textString = fmt.Sprintf("%s %s %s %s %s %s", DontGuess, IWillSayTheAnswer,
 			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue, Notify)
+		ttsString = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
+			SaySongInfoString(userSession), ToContinue, Notify)
 	} else {
-		str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
+		textString = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
 			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
+		ttsString = fmt.Sprintf("%s %s %s %s", DontGuess, IWillSayTheAnswer,
+			SaySongInfoString(userSession), ToContinue)
 	}
 
-	return str, str
+	return textString, ttsString
 }
 
 func WinPhrase(userSession *Session) (string, string) {
-	textString := fmt.Sprintf("%s %s %s", YouGuessText, GetScoreText(userSession), ToContinue)
+	textString := fmt.Sprintf("%s %s %s %s", YouGuessText, SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
 	ttsString := fmt.Sprintf("%s %s %s", YouGuessTTS, SaySongInfoString(userSession), ToContinue)
 	return textString, ttsString
 }

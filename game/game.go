@@ -58,7 +58,7 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 		audioVkId = userSession.CurrentTrack.Duration5
 	}
 
-	if userSession.ArtistMatch {
+	if userSession.ArtistMatch && userSession.GameMode != models.ArtistMode {
 		preWin = "Вы угадали исполнителя! А ^см`ожете^ название? "
 	} else if userSession.TitleMatch {
 		preWin = "Вы угадали название! А ^см`ожете^ исполнителя? "
@@ -171,7 +171,8 @@ func SelectArtist(userSession *models.Session, command string, resp marusia.Resp
 	userSession.TrackCounter = 0
 	userSession.GameMode = models.ArtistMode
 	//ХЗ
-	userSession.CurrentGenre = tracks[0].Artist // TODO сюда могут подставляться фиты, надо из mU.GetSongsByArtist(command) еще возвращать и имя ОДНОГО артиста
+	// userSession.CurrentGenre = tracks[0].Artist // TODO сюда могут подставляться фиты, надо из mU.GetSongsByArtist(command) еще возвращать и имя ОДНОГО артиста
+	userSession.CurrentGenre = command // TODO исправить на имя выбранного исполнителя из базы
 	userSession.CurrentPlaylist = tracks
 	resp = StartGame(userSession, resp, mU, rng)
 	return resp
