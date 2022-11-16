@@ -97,11 +97,17 @@ func main() {
 				// попросили поменять игру
 				userSession.GameState = models.NewGameState
 				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
-			} else if utils.ContainsAny(r.Request.Command, models.ChangeGenre, models.ChangeGenre_, models.AnotherGenre) {
+			} else if utils.ContainsAny(
+				r.Request.Command, models.ChangeGenre, models.ChangeGenre_, models.AnotherGenre,
+			) {
 				// попросили поменять жанр
 				userSession.GameState = models.ChooseGenreState
 				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
-			} else if utils.ContainsAny(r.Request.Command, models.ChooseArtist, models.ChangeArtist, models.ChangeArtist_, models.AnotherArtist, models.ChangeArtist__, models.ChangeArtist___, models.AnotherArtist__) {
+			} else if utils.ContainsAny(
+				r.Request.Command, models.ChooseArtist, models.ChangeArtist, models.ChangeArtist_,
+				models.AnotherArtist, models.ChooseArtist__, models.ChangeArtist__, models.ChangeArtist___,
+				models.AnotherArtist__,
+			) {
 				// попросили поменять артиста
 				userSession.GameState = models.ChooseArtistState
 				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
@@ -136,13 +142,15 @@ func main() {
 							str += genre + "\n"
 						}
 						resp.Text, resp.TTS = str, str
-					} else if utils.ContainsAny(r.Request.Command, models.Artists) {
+					} else if utils.ContainsAny(r.Request.Command, models.Artist) {
 						//Переходим на артистов
 						userSession.GameState = models.ChooseArtistState
 						resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 					} else {
 						// ищем названный жанр и начинаем игру
-						resp = game.SelectGenre(userSession, r.Request.Command, resp, musicU, sessions, r.Session.SessionID, rng)
+						resp = game.SelectGenre(
+							userSession, r.Request.Command, resp, musicU, sessions, r.Session.SessionID, rng,
+						)
 					}
 					printLog("GenresResponse", r, userSession)
 
@@ -158,11 +166,13 @@ func main() {
 						// выход обратно к жанрам
 						userSession.GameState = models.ChooseGenreState
 						resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
+					} else {
+						// ищем названного исполнителя и начинаем игру
+						resp = game.SelectArtist(
+							userSession, r.Request.Command, resp, musicU, sessions, r.Session.SessionID, rng,
+						)
+						printLog("ArtistRequest", r, userSession)
 					}
-					// ищем названного исполнителя и начинаем игру
-					resp = game.SelectArtist(userSession, r.Request.Command, resp, musicU, sessions, r.Session.SessionID, rng)
-					printLog("ArtistRequest", r, userSession)
-
 				case models.StatusPlaying:
 					// логика во время игры
 					printLog("PlayingRequest", r, userSession)
@@ -239,7 +249,7 @@ func main() {
 					}
 					printLog("PlayingResponse", r, userSession)
 				case models.StatusCompetitionRules:
-					if strings.Contains(r.Request.Command, models.Yes) {
+					if utils.ContainsAny(r.Request.Command, models.Yes, models.LetsPlay) {
 						userSession.GameState = models.ChooseGenreState
 						userSession.CompetitionMode = true
 						userSession.CurrentPoints = 0
