@@ -17,17 +17,9 @@ const (
 )
 
 const (
-	GuessedAllAttempt1 = 15
-	GuessedAllAttempt2 = 10
-	GuessedAllAttempt3 = 5
-
-	GuessedArtistAttempt1 = 15
-	GuessedArtistAttempt2 = 10
-	GuessedArtistAttempt3 = 5
-
-	GuessedTitleAttempt1 = 15
-	GuessedTitleAttempt2 = 10
-	GuessedTitleAttempt3 = 5
+	GuessedAttempt1 = 12
+	GuessedAttempt2 = 8
+	GuessedAttempt3 = 4
 )
 
 const (

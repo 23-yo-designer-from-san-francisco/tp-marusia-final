@@ -129,13 +129,9 @@ func SelectGenre(userSession *models.Session, command string, resp marusia.Respo
 	}
 
 	if err != nil {
-		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
 		fmt.Println(err.Error())
-		resp.Text, resp.TTS = str, str
-		return resp
 	}
-
-	if len(tracks) == 0 {
+	if err != nil || len(tracks) == 0 {
 		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
 		resp.Text, resp.TTS = str, str
 		return resp
@@ -156,13 +152,9 @@ func SelectArtist(userSession *models.Session, command string, resp marusia.Resp
 	tracks, err := mU.GetSongsByArtist(command)
 	if err != nil {
 		fmt.Println(err.Error())
-		str := "Извините, я не знаю о таком исполнителя. Назовите кого-нибудь ещё."
-		resp.Text, resp.TTS = str, str
-		return resp
 	}
-
-	if len(tracks) == 0 {
-		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
+	if err != nil || len(tracks) == 0 {
+		str := "Извините, я не знаю о таком исполнителя. Назовите кого-нибудь ещё."
 		resp.Text, resp.TTS = str, str
 		return resp
 	}
@@ -179,7 +171,7 @@ func SelectArtist(userSession *models.Session, command string, resp marusia.Resp
 	userSession.TrackCounter = 0
 	userSession.GameMode = models.ArtistMode
 	//ХЗ
-	userSession.CurrentGenre = "Игра по артисту"
+	userSession.CurrentGenre = tracks[0].Artist // TODO сюда могут подставляться фиты, надо из mU.GetSongsByArtist(command) еще возвращать и имя ОДНОГО артиста
 	userSession.CurrentPlaylist = tracks
 	resp = StartGame(userSession, resp, mU, rng)
 	return resp

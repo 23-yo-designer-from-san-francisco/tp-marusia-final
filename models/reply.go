@@ -30,10 +30,10 @@ func LosePhrase(userSession *Session) (string, string) {
 	userSession.Fails += 1
 	if userSession.Fails >= 3 {
 		str = fmt.Sprintf("%s %s %s %s %s %s", DontGuess, IWillSayTheAnswer,
-			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue, GenreNotify)
+			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue, Notify)
 	} else {
-		str = fmt.Sprintf("%s %s %s %s %s %s", DontGuess, IWillSayTheAnswer,
-			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue, ToStop)
+		str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
+			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
 	}
 
 	return str, str
