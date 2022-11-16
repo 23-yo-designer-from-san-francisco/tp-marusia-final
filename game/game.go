@@ -64,9 +64,9 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 		preWin = "Вы угадали название! А ^см`ожете^ исполнителя? "
 	} else if userSession.TrackCounter == 1 && userSession.CurrentLevel == models.Two {
 		if userSession.GameMode == models.ArtistMode {
-			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Чтобы поменять, скажите «сменить игру». ", userSession.CurrentGenre)
+			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Вы можете в любой момент «Cменить игру», «Cменить исполнителя» или «Cменить жанр». ", userSession.CurrentGenre)
 		} else {
-			preWin = fmt.Sprintf("Вы выбрали жанр «%s». Чтобы поменять, скажите «сменить игру». ", userSession.CurrentGenre)
+			preWin = fmt.Sprintf("Вы выбрали жанр «%s». Вы можете в любой момент «Cменить игру», «Cменить исполнителя» или «Cменить жанр». ", userSession.CurrentGenre)
 		}
 	}
 
@@ -90,7 +90,7 @@ func WrongAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 		resp.Text, resp.TTS = getRespTextFromLevel(userSession)
 		return resp
 	}
-	resultString := fmt.Sprintf("%s — %s %s %s. ", models.IWillSayTheAnswer, models.SaySongInfoString(userSession), models.ToContinue, models.ToStop)
+	resultString := fmt.Sprintf("%s — %s %s. ", models.IWillSayTheAnswer, models.SaySongInfoString(userSession), models.ToContinue)
 	resp.Text, resp.TTS = resultString, resultString
 	return resp
 }
