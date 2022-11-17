@@ -81,3 +81,8 @@ func CompetitionRulesPhrase() (string, string) {
 	str := CompetitionRules
 	return str, str
 }
+
+func StandartErrorPhrase() (string, string) {
+	str := ErrorHappend
+	return str, str
+}
