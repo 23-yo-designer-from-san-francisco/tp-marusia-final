@@ -187,7 +187,7 @@ func main() {
 					} else {
 						// ищем названного исполнителя и начинаем игру
 						resp = game.SelectArtist(
-							userSession, r.Request.Command, resp, musicU, sessions, r.Session.SessionID, rng,
+							userSession, r.Request.Command, resp, musicU, r.Session.SessionID, rng,
 						)
 						printLog("ArtistRequest", r, userSession)
 					}

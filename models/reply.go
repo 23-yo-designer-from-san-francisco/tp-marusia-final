@@ -45,7 +45,7 @@ func LosePhrase(userSession *Session) (string, string) {
 		str = fmt.Sprintf("%s %s", str, Notify)
 	}
 
-	return textString, ttsString
+	return str, str
 }
 
 func WinPhrase(userSession *Session) (string, string) {
