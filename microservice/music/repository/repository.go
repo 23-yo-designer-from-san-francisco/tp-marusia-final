@@ -44,6 +44,7 @@ const (
 	getGenres = `select genre from genre;`
 	
 	getMusicByGenre = `select 
+    	m.id,
 		m.title,
 		m.artist,
 		m.duration_two_url,
@@ -103,7 +104,7 @@ func (mR *MusicRepository) GetGenreFromHumanGenre(humanGenre string) (string, er
 	return genre, nil
 }
 
-func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
+func (mR *MusicRepository) CreateTrack(track *models.VKTrack) error {
 	tx, err := mR.db.Beginx()
 	if err != nil {
 		log.Error(err)
@@ -112,12 +113,12 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
 	}
 
 	var musicID int
-	err = tx.QueryRowx(insertMusicQueryV2, 
-		&track.Title, 
-		&track.Artist, 
-		&track.Duration2, 
-		&track.Duration3, 
-		&track.Duration5, 
+	err = tx.QueryRowx(insertMusicQueryV2,
+		&track.Title,
+		&track.Artist,
+		&track.Duration2,
+		&track.Duration3,
+		&track.Duration5,
 		&track.Duration15,
 		&track.HumanTitles).Scan(&musicID)
 
@@ -127,7 +128,7 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
 		tx.Rollback()
 		return err
 	}
-	
+
 	for artist, humanArtists := range track.ArtistsWithHumanArtists {
 		var artistID int
 		err := tx.Get(&artistID, selectArtistIDQuery, artist)
@@ -162,7 +163,7 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) (error) {
 	return nil
 }
 
-func (mR *MusicRepository) GetArtistsInfoByMusicID (musicID int) (map[string][]string, error) {
+func (mR *MusicRepository) GetArtistsInfoByMusicID(musicID int) (map[string][]string, error) {
 	type artistInfo struct {
 		Artist string `db:"artist_name"`
 		HumanArtists pq.StringArray `db:"human_artists"`

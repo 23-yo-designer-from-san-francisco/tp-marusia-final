@@ -4,7 +4,7 @@ import "strings"
 
 func ContainsAny(str string, subs ...string) bool {
 	for _, sub := range subs {
-		if strings.Contains(str, sub) {
+		if strings.Contains(strings.ToLower(str), strings.ToLower(sub)) {
 			return true
 		}
 	}

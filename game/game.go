@@ -59,15 +59,15 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 		audioVkId = userSession.CurrentTrack.Duration5
 	}
 
-	if userSession.ArtistMatch {
+	if userSession.ArtistMatch && userSession.GameMode != models.ArtistMode {
 		preWin = "Вы угадали исполнителя! А ^см`ожете^ название? "
 	} else if userSession.TitleMatch {
 		preWin = "Вы угадали название! А ^см`ожете^ исполнителя? "
 	} else if userSession.TrackCounter == 1 && userSession.CurrentLevel == models.Two {
 		if userSession.GameMode == models.ArtistMode {
-			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Чтобы поменять, скажите «сменить игру». ", userSession.CurrentGenre)
+			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
 		} else {
-			preWin = fmt.Sprintf("Вы выбрали жанр «%s». Чтобы поменять, скажите «сменить игру». ", userSession.CurrentGenre)
+			preWin = fmt.Sprintf("Вы выбрали жанр «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
 		}
 	}
 
@@ -91,7 +91,7 @@ func WrongAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 		resp.Text, resp.TTS = getRespTextFromLevel(userSession)
 		return resp
 	}
-	resultString := fmt.Sprintf("%s — %s %s %s. ", models.IWillSayTheAnswer, models.SaySongInfoString(userSession), models.ToContinue, models.ToStop)
+	resultString := fmt.Sprintf("%s — %s %s. ", models.IWillSayTheAnswer, models.SaySongInfoString(userSession), models.ToContinue)
 	resp.Text, resp.TTS = resultString, resultString
 	return resp
 }
@@ -160,8 +160,7 @@ func SelectArtist(userSession *models.Session, command string, resp marusia.Resp
 
 	userSession.TrackCounter = 0
 	userSession.GameMode = models.ArtistMode
-	//ХЗ
-	userSession.CurrentGenre = artist // TODO сюда могут подставляться фиты, надо из mU.GetSongsByArtist(command) еще возвращать и имя ОДНОГО артиста
+	userSession.CurrentGenre = artist
 	userSession.CurrentPlaylist = tracks
 	resp = StartGame(userSession, resp, mU, rng)
 	return resp
