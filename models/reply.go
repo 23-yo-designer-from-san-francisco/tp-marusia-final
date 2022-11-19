@@ -24,29 +24,35 @@ func GetScoreText(userSession *Session) string {
 	return score
 }
 
+func SayIfPlaylistFinished(userSession *Session, str string) (string) {
+	if userSession.TrackCounter >= len(userSession.CurrentPlaylist) {
+		str = fmt.Sprintf("%s %s", str, PlaylistFinished)
+	}
+	return str
+}
+
 // Если человек не смог угадать
 func LosePhrase(userSession *Session) (string, string) {
-	var textString string
-	var ttsString string
+	var str string
+	
 	userSession.Fails += 1
-	if userSession.Fails >= 3 {
-		textString = fmt.Sprintf("%s %s %s %s %s %s", DontGuess, IWillSayTheAnswer,
-			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue, Notify)
-		ttsString = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
-			SaySongInfoString(userSession), ToContinue, Notify)
-	} else {
-		textString = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
+	str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
 			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
-		ttsString = fmt.Sprintf("%s %s %s %s", DontGuess, IWillSayTheAnswer,
-			SaySongInfoString(userSession), ToContinue)
+	
+	str = SayIfPlaylistFinished(userSession, str)
+
+	if userSession.Fails % 4 == 0 && userSession.Fails != 0 {
+		str = fmt.Sprintf("%s %s", str, Notify)
 	}
 
 	return textString, ttsString
 }
 
 func WinPhrase(userSession *Session) (string, string) {
-	textString := fmt.Sprintf("%s %s %s %s", YouGuessText, SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
-	ttsString := fmt.Sprintf("%s %s %s", YouGuessTTS, SaySongInfoString(userSession), ToContinue)
+	textString := fmt.Sprintf("%s %s %s %s", YouGuessText, GetScoreText(userSession), ToContinue, ToStop)
+	ttsString := fmt.Sprintf("%s %s %s %s", YouGuessTTS, SaySongInfoString(userSession), ToContinue, ToStop)
+	textString = SayIfPlaylistFinished(userSession, textString)
+	ttsString = SayIfPlaylistFinished(userSession, ttsString)
 	return textString, ttsString
 }
 
@@ -84,5 +90,10 @@ func ChooseArtistPhrase() (string, string) {
 
 func CompetitionRulesPhrase() (string, string) {
 	str := CompetitionRules
+	return str, str
+}
+
+func StandartErrorPhrase() (string, string) {
+	str := ErrorHappend
 	return str, str
 }

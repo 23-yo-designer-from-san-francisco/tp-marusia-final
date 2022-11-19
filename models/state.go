@@ -8,7 +8,7 @@ type State struct {
 	StandartPhraseTTS string
 }
 
-func NewState(gameStatus int, phraseF phraseFunc) *State{
+func NewState(gameStatus int, phraseF, errorPhraseF phraseFunc) *State{
 	state := State{}
 	state.GameStatus = gameStatus
 	state.StandartPhraseText, state.StandartPhraseTTS = phraseF()
@@ -19,10 +19,14 @@ func (state *State) SayStandartPhrase() (string, string) {
 	return state.StandartPhraseText, state.StandartPhraseTTS
 }
 
-var NewGameState = NewState(StatusNewGame, StartGamePhrase) 
-var ChooseGenreState = NewState(StatusChoosingGenre, ChooseGenrePhrase)
-var ListingGenreState = NewState(StatusListingGenres, AvailableGenresPhrase)
-var PlayingState = NewState(StatusPlaying, PlayingGamePhrase)
-var NewCompetitionState = NewState(StatusNewCompetition, CompetitionPhrase)
-var CompetitonRulesState = NewState(StatusCompetitionRules, CompetitionRulesPhrase)
-var ChooseArtistState = NewState(StatusChooseArtist, ChooseArtistPhrase)
+func (state *State) SayErrorPhrase() (string, string) {
+	return state.StandartPhraseText, state.StandartPhraseTTS
+}
+
+var NewGameState = NewState(StatusNewGame, StartGamePhrase, StandartErrorPhrase) 
+var ChooseGenreState = NewState(StatusChoosingGenre, ChooseGenrePhrase, StandartErrorPhrase)
+var ListingGenreState = NewState(StatusListingGenres, AvailableGenresPhrase, StandartErrorPhrase)
+var PlayingState = NewState(StatusPlaying, PlayingGamePhrase, StandartErrorPhrase)
+var NewCompetitionState = NewState(StatusNewCompetition, CompetitionPhrase, StandartErrorPhrase)
+var CompetitonRulesState = NewState(StatusCompetitionRules, CompetitionRulesPhrase, StandartErrorPhrase)
+var ChooseArtistState = NewState(StatusChooseArtist, ChooseArtistPhrase, StandartErrorPhrase)

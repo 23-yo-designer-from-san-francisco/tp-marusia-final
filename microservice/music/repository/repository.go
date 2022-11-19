@@ -19,16 +19,12 @@ const (
 
 	selectArtistIDQuery = `select id from artist where artist = $1;`
 
-	insertArtistQuery   = `insert into artist (music_id, artist, human_artist) values ($1, $2, $3);`
-	insertArtistV2Query = `insert into artist (music_id, artist) values ($1,$2) returning id;`
-	insertArtistQueryV2 = `insert into artist (artist, human_artists) values ($1, $2) returning id;`
+	insertArtistQueryV2   = `insert into artist (artist_name, human_artists) values ($1, $2) returning id;`
 
 	insertArtistMusic = `insert into artist_music (music_id, artist_id) values ($1, $2);`
-	insertHumanTitle  = `insert into human_title (music_id, human_title) values ($1, $2);`
-	insertHumanArtist = `insert into human_artist (artist_id, human_artist) values ($1, $2);`
 
 	selectArtistsInfoByMusicId = `
-		select a.artist, a.human_artists from artist_music as am
+		select a.artist_name, a.human_artists from artist_music as am
 		join artist as a on a.id = am.artist_id
 		where am.music_id = $1;`
 
@@ -45,22 +41,8 @@ const (
 		join artist as a on a.id = am.artist_id
 		where $1 = ANY(a.human_artists);`
 
-	getSongById = `
-		SELECT m.title,
-			   m.artist,
-			   m.duration_two_url,
-			   m.duration_three_url,
-			   m.duration_five_url,
-			   m.duration_fifteen_url,
-			   m.human_title
-		FROM music AS m
-		JOIN artist ON artist.music_id = m.id
-		WHERE m.id = $1;
-	`
-	getTracksCount = `SELECT max(id) FROM music;`
-
-	getGenres = `select title from genre;`
-
+	getGenres = `select genre from genre;`
+	
 	getMusicByGenre = `select 
     	m.id,
 		m.title,
@@ -73,12 +55,12 @@ const (
 		from music as m 
 			join genre_music as gm on m.id = gm.music_id 
 			join genre as g on g.id = gm.genre_id 
-			where g.human_title = $1;`
-
-	getGenreFromHumanGenre = `select title from genre where human_title = $1;`
-
-	getArtistFromHumanArtist = `select distinct artist from artist where human_artist = $1`
-	getAllSongs              = `
+			where $1 = ANY(g.human_genres);`
+	getArtistFromHumanArtist = `select distinct artist_name from artist where $1 = ANY(human_artists)`;
+	
+	getGenreFromHumanGenre = `select genre from genre where $1 = ANY(human_genres);`
+	
+	getAllSongs = `
 		SELECT 
 				m.id,
 				m.title,
@@ -90,7 +72,6 @@ const (
 				m.human_titles
 		FROM music AS m;
 	`
-	getAllSongsWithoutArtists = `SELECT * FROM music as m;`
 )
 
 type MusicRepository struct {
@@ -184,7 +165,7 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) error {
 
 func (mR *MusicRepository) GetArtistsInfoByMusicID(musicID int) (map[string][]string, error) {
 	type artistInfo struct {
-		Artist       string         `db:"artist"`
+		Artist string `db:"artist_name"`
 		HumanArtists pq.StringArray `db:"human_artists"`
 	}
 
@@ -239,21 +220,27 @@ func (mR *MusicRepository) GetMusicByGenre(genre string) ([]models.VKTrack, erro
 	return VKTracks, nil
 }
 
-func (mR *MusicRepository) GetSongsByArtist(artist string) ([]models.VKTrack, error) {
+func (mR *MusicRepository) GetSongsByArtist(human_artist string) ([]models.VKTrack, string, error) {
 	var VKTracks = []models.VKTrack{}
-	err := mR.db.Select(&VKTracks, getSongsByHumanArtist, artist)
+	err := mR.db.Select(&VKTracks, getSongsByHumanArtist, human_artist)
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return nil, "", err
+	}
+	var artist string
+	err = mR.db.Get(&artist, getArtistFromHumanArtist, human_artist)
+	if err != nil {
+		log.Error(err)
+		return nil, "", err
 	}
 
 	for index, track := range VKTracks {
 		VKTracks[index].ArtistsWithHumanArtists, err = mR.GetArtistsInfoByMusicID(track.ID)
 		if err != nil {
 			log.Error(err)
-			return nil, err
+			return nil, "", err
 		}
 		log.Debug("Track Map ", track.ArtistsWithHumanArtists)
 	}
-	return VKTracks, nil
+	return VKTracks, artist, nil
 }

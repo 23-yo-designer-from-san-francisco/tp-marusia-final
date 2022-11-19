@@ -36,7 +36,16 @@ services:
       - .env
     volumes:
       - pgadmindata:/var/lib/pgadmin
+  
+  redis:
+    restart: always
+    image: redis:latest
+    ports:
+      - "6830:6379"
+    volumes:
+      - redisdata:/data
 
 volumes:
   postgresdatamarusia:
   pgadmindata:
+  redisdata:

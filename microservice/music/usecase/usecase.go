@@ -121,7 +121,7 @@ func (mU *MusicUsecase) CreateAllMusic(Tracks []models.VKTrack) error {
 	return nil
 }
 
-func (mU *MusicUsecase) GetSongsByArtist(artist string) ([]models.VKTrack, error) {
+func (mU *MusicUsecase) GetSongsByArtist(artist string) ([]models.VKTrack, string, error) {
 	return mU.musicRepository.GetSongsByArtist(artist)
 }
 

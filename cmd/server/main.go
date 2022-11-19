@@ -23,6 +23,9 @@ import (
 	musicDelivery "guessTheSongMarusia/microservice/music/delivery"
 	musicRepo "guessTheSongMarusia/microservice/music/repository"
 	musicUsecase "guessTheSongMarusia/microservice/music/usecase"
+
+	sessionRepo "guessTheSongMarusia/microservice/user/repository"
+	sessionUsecase "guessTheSongMarusia/microservice/user/usecase"
 )
 
 const logMessage = "server:"
@@ -60,9 +63,18 @@ func main() {
 		log.Error(err)
 		os.Exit(1)
 	}
+	redisDB, err := utils.InitRedisDB()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
 	musicR := musicRepo.NewMusicRepository(postgresDB)
 	musicU := musicUsecase.NewMusicUsecase(musicR)
 	musicD := musicDelivery.NewMusicDelivery(musicU)
+
+	sessionR := sessionRepo.NewSessionRepository(redisDB)
+	sessionU := sessionUsecase.NewUserUsecase(sessionR)
 
 	mywh := marusia.NewWebhook()
 	mywh.EnableDebuging()
@@ -70,13 +82,18 @@ func main() {
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
 
-	sessions := make(map[string]*models.Session)
-
 	mywh.OnEvent(func(r marusia.Request) (resp marusia.Response) {
-		userSession, ok := sessions[r.Session.SessionID]
-		if !ok {
+		log.Debug("Got command:", r.Request.Command)
+		userSession, err := sessionU.GetSession(r.Session.SessionID)
+		if err != nil {
+			log.Error(err.Error())
 			userSession = models.NewSession()
-			sessions[r.Session.SessionID] = userSession
+			err := sessionU.SaveSession(r.Session.SessionID, userSession)
+			if err != nil {
+				log.Error(err.Error())
+				resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
+				return resp
+			}
 			resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 			return resp
 		}
@@ -89,7 +106,12 @@ func main() {
 				resp.Text, resp.TTS = models.GoodBye, models.GoodBye
 				resp.EndSession = true
 				//TODO перенести сессии в базку или редиску
-				delete(sessions, r.Session.SessionID)
+				err := sessionU.DeleteSession(r.Session.SessionID)
+				if err != nil {
+					log.Error(err.Error())
+					resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
+					return resp
+				}
 				return resp
 			}
 			logrus.Warnf("Current mode: %d", userSession.GameState.GameStatus)
@@ -97,9 +119,7 @@ func main() {
 				// попросили поменять игру
 				userSession.GameState = models.NewGameState
 				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
-			} else if utils.ContainsAny(
-				r.Request.Command, models.ChangeGenre, models.ChangeGenre_, models.AnotherGenre,
-			) {
+			} else if utils.ContainsAny(r.Request.Command, models.ChangeGenre, models.ChangeGenre_, models.AnotherGenre) {
 				// попросили поменять жанр
 				userSession.GameState = models.ChooseGenreState
 				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
@@ -148,9 +168,7 @@ func main() {
 						resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 					} else {
 						// ищем названный жанр и начинаем игру
-						resp = game.SelectGenre(
-							userSession, r.Request.Command, resp, musicU, sessions, r.Session.SessionID, rng,
-						)
+						resp = game.SelectGenre(userSession, r.Request.Command, resp, musicU, r.Session.SessionID, rng)
 					}
 					printLog("GenresResponse", r, userSession)
 
@@ -173,6 +191,10 @@ func main() {
 						)
 						printLog("ArtistRequest", r, userSession)
 					}
+					// ищем названного исполнителя и начинаем игру
+					resp = game.SelectArtist(userSession, r.Request.Command, resp, musicU, r.Session.SessionID, rng)
+					printLog("ArtistRequest", r, userSession)
+          
 				case models.StatusPlaying:
 					// логика во время игры
 					printLog("PlayingRequest", r, userSession)
@@ -264,6 +286,11 @@ func main() {
 			}
 		}
 		logrus.Warnf("New mode: %d", userSession.GameState.GameStatus)
+		err = sessionU.SaveSession(r.Session.SessionID, userSession)
+		if err != nil {
+			log.Error(err.Error())
+			resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
+		}
 		return resp
 	})
 
