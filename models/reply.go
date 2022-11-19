@@ -24,16 +24,25 @@ func GetScoreText(userSession *Session) string {
 	return score
 }
 
+func SayIfPlaylistFinished(userSession *Session, str string) (string) {
+	if userSession.TrackCounter >= len(userSession.CurrentPlaylist) {
+		str = fmt.Sprintf("%s %s", str, PlaylistFinished)
+	}
+	return str
+}
+
 // Если человек не смог угадать
 func LosePhrase(userSession *Session) (string, string) {
 	var str string
+	
 	userSession.Fails += 1
-	if userSession.Fails >= 3 {
-		str = fmt.Sprintf("%s %s %s %s %s %s", DontGuess, IWillSayTheAnswer,
-			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue, Notify)
-	} else {
-		str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
+	str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
 			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
+	
+	str = SayIfPlaylistFinished(userSession, str)
+
+	if userSession.Fails % 4 == 0 && userSession.Fails != 0 {
+		str = fmt.Sprintf("%s %s", str, Notify)
 	}
 
 	return str, str
@@ -42,6 +51,8 @@ func LosePhrase(userSession *Session) (string, string) {
 func WinPhrase(userSession *Session) (string, string) {
 	textString := fmt.Sprintf("%s %s %s %s", YouGuessText, GetScoreText(userSession), ToContinue, ToStop)
 	ttsString := fmt.Sprintf("%s %s %s %s", YouGuessTTS, SaySongInfoString(userSession), ToContinue, ToStop)
+	textString = SayIfPlaylistFinished(userSession, textString)
+	ttsString = SayIfPlaylistFinished(userSession, ttsString)
 	return textString, ttsString
 }
 

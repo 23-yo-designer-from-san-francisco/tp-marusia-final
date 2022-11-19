@@ -83,6 +83,7 @@ func main() {
 	rng.Seed(time.Now().UnixNano())
 
 	mywh.OnEvent(func(r marusia.Request) (resp marusia.Response) {
+		log.Debug("Got command:", r.Request.Command)
 		userSession, err := sessionU.GetSession(r.Session.SessionID)
 		if err != nil {
 			log.Error(err.Error())

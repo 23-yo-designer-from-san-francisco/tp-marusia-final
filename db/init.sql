@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS genre (
     id serial not null unique,
-    title varchar not null unique,
-    human_title text
+    genre varchar not null unique,
+    human_genres text[]
 );
 
 CREATE TABLE IF NOT EXISTS music (
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS genre_music (
 
 CREATE TABLE IF NOT EXISTS artist (
     id serial not null unique,
-    artist text unique,
+    artist_name text unique,
     human_artists text[]
 );
 
