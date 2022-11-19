@@ -168,7 +168,7 @@ func main() {
 						resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 					} else {
 						// ищем названный жанр и начинаем игру
-						resp = game.SelectGenre(userSession, r.Request.Command, resp, musicU, r.Session.SessionID, rng)
+						resp = game.SelectGenre(userSession, r.Request.Command, resp, musicU, rng)
 					}
 					printLog("GenresResponse", r, userSession)
 
@@ -194,13 +194,13 @@ func main() {
 					// ищем названного исполнителя и начинаем игру
 					resp = game.SelectArtist(userSession, r.Request.Command, resp, musicU, r.Session.SessionID, rng)
 					printLog("ArtistRequest", r, userSession)
-          
+
 				case models.StatusPlaying:
 					// логика во время игры
 					printLog("PlayingRequest", r, userSession)
 					if !userSession.MusicStarted {
 						// перед первым или после последнего прослушивания (или если игра не стартанула из выбора жанра/артиста)
-						resp = game.StartGame(userSession, resp, musicU, rng)
+						resp = game.StartGame(userSession, resp)
 					} else {
 						// после первого прослушивания
 						if utils.ContainsAny(r.Request.Command, models.Next, models.GiveUp) {

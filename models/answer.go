@@ -26,7 +26,7 @@ const (
 	Competition     = "соревновани"
 	Yes             = "да"
 	No              = "нет"
-	LetsPlay        = "играем"
+	LetsPlay        = "игра"
 	Artist          = "артист"
 )
 
