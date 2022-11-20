@@ -3,12 +3,12 @@ package models
 type phraseFunc func() (string, string)
 
 type State struct {
-	GameStatus int
+	GameStatus         int
 	StandartPhraseText string
-	StandartPhraseTTS string
+	StandartPhraseTTS  string
 }
 
-func NewState(gameStatus int, phraseF, errorPhraseF phraseFunc) *State{
+func NewState(gameStatus int, phraseF, errorPhraseF phraseFunc) *State {
 	state := State{}
 	state.GameStatus = gameStatus
 	state.StandartPhraseText, state.StandartPhraseTTS = phraseF()
@@ -23,10 +23,15 @@ func (state *State) SayErrorPhrase() (string, string) {
 	return state.StandartPhraseText, state.StandartPhraseTTS
 }
 
-var NewGameState = NewState(StatusNewGame, StartGamePhrase, StandartErrorPhrase) 
+func (state *State) RandomPlaylistPhrase() (string, string) {
+	return state.StandartPhraseText, state.StandartPhraseTTS
+}
+
+var NewGameState = NewState(StatusNewGame, StartGamePhrase, StandartErrorPhrase)
 var ChooseGenreState = NewState(StatusChoosingGenre, ChooseGenrePhrase, StandartErrorPhrase)
 var ListingGenreState = NewState(StatusListingGenres, AvailableGenresPhrase, StandartErrorPhrase)
 var PlayingState = NewState(StatusPlaying, PlayingGamePhrase, StandartErrorPhrase)
 var NewCompetitionState = NewState(StatusNewCompetition, CompetitionPhrase, StandartErrorPhrase)
 var CompetitonRulesState = NewState(StatusCompetitionRules, CompetitionRulesPhrase, StandartErrorPhrase)
 var ChooseArtistState = NewState(StatusChooseArtist, ChooseArtistPhrase, StandartErrorPhrase)
+var RandomPlaylistState = NewState(StatusGeneratedPlaylist, RandomPlaylistPhrase, StandartErrorPhrase)

@@ -31,6 +31,7 @@ const (
 	StatusCompetitionRules
 	StatusCompetition
 	StatusChooseArtist
+	StatusGeneratedPlaylist
 )
 
 const (

@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"guessTheSongMarusia/microservice/music/usecase"
 	"guessTheSongMarusia/models"
 	"math/rand"
@@ -12,7 +13,7 @@ import (
 
 func StartGame(userSession *models.Session, resp marusia.Response) marusia.Response {
 	//TODO userSession.CurrentGenre тут выбрать жанр нужный
-	userSession.CurrentTrack = ChooseTrack(userSession)
+	userSession.CurrentTrack = NextTrack(userSession)
 	fmt.Println("Selected track", userSession.CurrentTrack)
 	fmt.Println("Selected track Artists", userSession.CurrentTrack.ArtistsWithHumanArtists)
 	userSession.GameState = models.PlayingState
@@ -26,8 +27,9 @@ func StartGame(userSession *models.Session, resp marusia.Response) marusia.Respo
 	return resp
 }
 
-func ChooseTrack(userSession *models.Session) models.VKTrack {
+func NextTrack(userSession *models.Session) models.VKTrack {
 	last := len(userSession.CurrentPlaylist) - 1
+	logrus.Info("Last index is ", last)
 	track := userSession.CurrentPlaylist[last]
 	userSession.CurrentPlaylist = userSession.CurrentPlaylist[:last]
 	return track
