@@ -24,7 +24,7 @@ func GetScoreText(userSession *Session) string {
 	return score
 }
 
-func SayIfPlaylistFinished(userSession *Session, str string) (string) {
+func SayIfPlaylistFinished(userSession *Session, str string) string {
 	if userSession.TrackCounter >= len(userSession.CurrentPlaylist) {
 		str = fmt.Sprintf("%s %s", str, PlaylistFinished)
 	}
@@ -34,14 +34,14 @@ func SayIfPlaylistFinished(userSession *Session, str string) (string) {
 // Если человек не смог угадать
 func LosePhrase(userSession *Session) (string, string) {
 	var str string
-	
+
 	userSession.Fails += 1
 	str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
-			SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
-	
+		SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
+
 	str = SayIfPlaylistFinished(userSession, str)
 
-	if userSession.Fails % 4 == 0 && userSession.Fails != 0 {
+	if userSession.Fails%4 == 0 && userSession.Fails != 0 {
 		str = fmt.Sprintf("%s %s", str, Notify)
 	}
 

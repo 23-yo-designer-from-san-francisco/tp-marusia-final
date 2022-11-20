@@ -17,9 +17,9 @@ const (
 		RETURNING id;
 	`
 
-	selectArtistIDQuery = `select id from artist where artist = $1;`
+	selectArtistIDQuery = `select id from artist where artist_name = $1;`
 
-	insertArtistQueryV2   = `insert into artist (artist_name, human_artists) values ($1, $2) returning id;`
+	insertArtistQueryV2 = `insert into artist (artist_name, human_artists) values ($1, $2) returning id;`
 
 	insertArtistMusic = `insert into artist_music (music_id, artist_id) values ($1, $2);`
 
@@ -42,7 +42,7 @@ const (
 		where $1 = ANY(a.human_artists);`
 
 	getGenres = `select genre from genre;`
-	
+
 	getMusicByGenre = `select 
     	m.id,
 		m.title,
@@ -56,10 +56,9 @@ const (
 			join genre_music as gm on m.id = gm.music_id 
 			join genre as g on g.id = gm.genre_id 
 			where $1 = ANY(g.human_genres);`
-	getArtistFromHumanArtist = `select distinct artist_name from artist where $1 = ANY(human_artists)`;
-	
-	getGenreFromHumanGenre = `select genre from genre where $1 = ANY(human_genres);`
-	
+	getArtistFromHumanArtist = `select distinct artist_name from artist where $1 = ANY(human_artists)`
+	getGenreFromHumanGenre   = `select genre from genre where $1 = ANY(human_genres);`
+
 	getAllSongs = `
 		SELECT 
 				m.id,
@@ -135,7 +134,7 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) error {
 		if err != nil {
 			//Проверка, не упала ли база
 			if !strings.Contains(err.Error(), "no rows in result set") {
-				log.Error("Смотрим ошибку", err)
+				log.Error("Смотрим ошибку1", err)
 				tx.Rollback()
 				return err
 			}
@@ -145,7 +144,7 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) error {
 				&humanArtists).Scan(&artistID)
 
 			if err != nil {
-				log.Error("Смотрим ошибку", err)
+				log.Error("Смотрим ошибку2", err)
 				tx.Rollback()
 				return err
 			}
@@ -153,7 +152,7 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) error {
 		//Заполняем связь много ко многим
 		_, err = tx.Exec(insertArtistMusic, &musicID, &artistID)
 		if err != nil {
-			log.Error("Смотрим ошибку", err)
+			log.Error("Смотрим ошибку3", err)
 			tx.Rollback()
 			return err
 		}
@@ -165,7 +164,7 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) error {
 
 func (mR *MusicRepository) GetArtistsInfoByMusicID(musicID int) (map[string][]string, error) {
 	type artistInfo struct {
-		Artist string `db:"artist_name"`
+		Artist       string         `db:"artist_name"`
 		HumanArtists pq.StringArray `db:"human_artists"`
 	}
 
@@ -173,7 +172,7 @@ func (mR *MusicRepository) GetArtistsInfoByMusicID(musicID int) (map[string][]st
 	log.Debug("MusicID = ", musicID)
 	err := mR.db.Select(&artistStructs, selectArtistsInfoByMusicId, &musicID)
 	if err != nil {
-		log.Error("Смотрим ошибку", err)
+		log.Error("Смотрим ошибку4", err)
 		return nil, err
 	}
 	log.Debug("artistStructs = ", artistStructs)

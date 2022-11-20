@@ -2,7 +2,10 @@ package game
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
+	"guessTheSongMarusia/microservice/music"
 	"guessTheSongMarusia/microservice/music/usecase"
+	"guessTheSongMarusia/microservice/user"
 	"guessTheSongMarusia/models"
 	"math/rand"
 	"time"
@@ -10,9 +13,11 @@ import (
 	"github.com/SevereCloud/vksdk/v2/marusia"
 )
 
-func StartGame(userSession *models.Session, resp marusia.Response, mU *usecase.MusicUsecase, rng *rand.Rand) marusia.Response {
+const TRACKS_IN_RAND_PLAYLIST = 10
+
+func StartGame(userSession *models.Session, resp marusia.Response) marusia.Response {
 	//TODO userSession.CurrentGenre тут выбрать жанр нужный
-	userSession.CurrentTrack = ChooseTrack(userSession, mU, rng)
+	userSession.CurrentTrack = NextTrack(userSession)
 	fmt.Println("Selected track", userSession.CurrentTrack)
 	fmt.Println("Selected track Artists", userSession.CurrentTrack.ArtistsWithHumanArtists)
 	userSession.GameState = models.PlayingState
@@ -26,22 +31,12 @@ func StartGame(userSession *models.Session, resp marusia.Response, mU *usecase.M
 	return resp
 }
 
-func ChooseTrack(userSession *models.Session, mU *usecase.MusicUsecase, rng *rand.Rand) models.VKTrack {
-	var randTrackID int
-	for {
-		rand.Seed(time.Now().Unix())
-		tracksCount := len(userSession.CurrentPlaylist)
-		randTrackID = rng.Int() % tracksCount
-		fmt.Println("Total tracks", tracksCount, " Random track: ", randTrackID)
-		_, ok := userSession.PlayedTracks[randTrackID]
-		fmt.Println("Length of map PlayedTracks", len(userSession.PlayedTracks))
-		fmt.Println("TrackCounter", userSession.TrackCounter)
-		if !ok || userSession.TrackCounter >= tracksCount {
-			userSession.PlayedTracks[randTrackID] = true
-			break
-		}
-	}
-	return userSession.CurrentPlaylist[randTrackID]
+func NextTrack(userSession *models.Session) models.VKTrack {
+	last := len(userSession.CurrentPlaylist) - 1
+	logrus.Info("Last index is ", last)
+	track := userSession.CurrentPlaylist[last]
+	userSession.CurrentPlaylist = userSession.CurrentPlaylist[:last]
+	return track
 }
 
 func getRespTextFromLevel(userSession *models.Session) (string, string) {
@@ -116,8 +111,29 @@ func CloseAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 	return resp
 }
 
-func SelectGenre(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase,
-	sessionID string, rng *rand.Rand) marusia.Response {
+func GenerateRandomPlaylist(userSession *models.Session, resp marusia.Response, sU user.SessionUsecase, mU music.Usecase,
+	nouns []string, adjectives []string, rng *rand.Rand) marusia.Response {
+	tracks, err := mU.GetAllMusic()
+	if err != nil {
+		logrus.Error(err)
+	}
+	rng.Seed(time.Now().UnixNano())
+	rng.Shuffle(len(tracks), func(i, j int) {
+		tracks[i], tracks[j] = tracks[j], tracks[i]
+	})
+	userSession.TrackCounter = 0
+	userSession.CurrentGenre = "Любой"
+	userSession.GameMode = models.GenreMode
+	userSession.CurrentPlaylist = tracks
+	if err := sU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks[:TRACKS_IN_RAND_PLAYLIST]); err != nil {
+		logrus.Error(err)
+	}
+
+	resp = StartGame(userSession, resp)
+	return resp
+}
+
+func SelectGenre(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase, rng *rand.Rand) marusia.Response {
 	var tracks []models.VKTrack
 	var err error
 	var genre string
@@ -142,12 +158,15 @@ func SelectGenre(userSession *models.Session, command string, resp marusia.Respo
 	userSession.CurrentGenre = genre
 	userSession.GameMode = models.GenreMode
 	userSession.CurrentPlaylist = tracks
-	resp = StartGame(userSession, resp, mU, rng)
+	rng.Seed(time.Now().UnixNano())
+	rng.Shuffle(len(userSession.CurrentPlaylist), func(i, j int) {
+		userSession.CurrentPlaylist[i], userSession.CurrentPlaylist[j] = userSession.CurrentPlaylist[j], userSession.CurrentPlaylist[i]
+	})
+	resp = StartGame(userSession, resp)
 	return resp
 }
 
-func SelectArtist(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase,
-		sessionID string, rng *rand.Rand) marusia.Response {
+func SelectArtist(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase, rng *rand.Rand) marusia.Response {
 	tracks, artist, err := mU.GetSongsByArtist(command)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -162,6 +181,10 @@ func SelectArtist(userSession *models.Session, command string, resp marusia.Resp
 	userSession.GameMode = models.ArtistMode
 	userSession.CurrentGenre = artist
 	userSession.CurrentPlaylist = tracks
-	resp = StartGame(userSession, resp, mU, rng)
+	rng.Seed(time.Now().UnixNano())
+	rng.Shuffle(len(userSession.CurrentPlaylist), func(i, j int) {
+		userSession.CurrentPlaylist[i], userSession.CurrentPlaylist[j] = userSession.CurrentPlaylist[j], userSession.CurrentPlaylist[i]
+	})
+	resp = StartGame(userSession, resp)
 	return resp
 }
