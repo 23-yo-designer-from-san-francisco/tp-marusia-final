@@ -3,13 +3,17 @@ package game
 import (
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"guessTheSongMarusia/microservice/music"
 	"guessTheSongMarusia/microservice/music/usecase"
+	"guessTheSongMarusia/microservice/user"
 	"guessTheSongMarusia/models"
 	"math/rand"
 	"time"
 
 	"github.com/SevereCloud/vksdk/v2/marusia"
 )
+
+const TRACKS_IN_RAND_PLAYLIST = 10
 
 func StartGame(userSession *models.Session, resp marusia.Response) marusia.Response {
 	//TODO userSession.CurrentGenre тут выбрать жанр нужный
@@ -107,6 +111,28 @@ func CloseAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 	return resp
 }
 
+func GenerateRandomPlaylist(userSession *models.Session, resp marusia.Response, sU user.SessionUsecase, mU music.Usecase,
+	nouns []string, adjectives []string, rng *rand.Rand) marusia.Response {
+	tracks, err := mU.GetAllMusic()
+	if err != nil {
+		logrus.Error(err)
+	}
+	rng.Seed(time.Now().UnixNano())
+	rng.Shuffle(len(tracks), func(i, j int) {
+		tracks[i], tracks[j] = tracks[j], tracks[i]
+	})
+	userSession.TrackCounter = 0
+	userSession.CurrentGenre = "Любой"
+	userSession.GameMode = models.GenreMode
+	userSession.CurrentPlaylist = tracks
+	if err := sU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks[:TRACKS_IN_RAND_PLAYLIST]); err != nil {
+		logrus.Error(err)
+	}
+
+	resp = StartGame(userSession, resp)
+	return resp
+}
+
 func SelectGenre(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase, rng *rand.Rand) marusia.Response {
 	var tracks []models.VKTrack
 	var err error
@@ -140,8 +166,7 @@ func SelectGenre(userSession *models.Session, command string, resp marusia.Respo
 	return resp
 }
 
-func SelectArtist(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase,
-	sessionID string, rng *rand.Rand) marusia.Response {
+func SelectArtist(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase, rng *rand.Rand) marusia.Response {
 	tracks, artist, err := mU.GetSongsByArtist(command)
 	if err != nil {
 		fmt.Println(err.Error())

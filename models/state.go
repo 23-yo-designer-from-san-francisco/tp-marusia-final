@@ -34,4 +34,3 @@ var PlayingState = NewState(StatusPlaying, PlayingGamePhrase, StandartErrorPhras
 var NewCompetitionState = NewState(StatusNewCompetition, CompetitionPhrase, StandartErrorPhrase)
 var CompetitonRulesState = NewState(StatusCompetitionRules, CompetitionRulesPhrase, StandartErrorPhrase)
 var ChooseArtistState = NewState(StatusChooseArtist, ChooseArtistPhrase, StandartErrorPhrase)
-var RandomPlaylistState = NewState(StatusGeneratedPlaylist, RandomPlaylistPhrase, StandartErrorPhrase)

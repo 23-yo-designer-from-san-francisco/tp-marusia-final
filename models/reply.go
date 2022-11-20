@@ -97,8 +97,3 @@ func StandartErrorPhrase() (string, string) {
 	str := ErrorHappend
 	return str, str
 }
-
-func RandomPlaylistPhrase() (string, string) {
-	str := "Я создала плейлст"
-	return str, str
-}

@@ -72,9 +72,7 @@ func MainHandler(r marusia.Request,
 					userSession.GameState = models.CompetitonRulesState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else if strings.Contains(r.Request.Command, models.RandomPlaylist) {
-					userSession.GameState = models.RandomPlaylistState
-					playlist := GeneratePlaylistName(nouns, adjectives, rng)
-					resp.Text, resp.Text = playlist, playlist //userSession.GameState.SayStandartPhrase()
+					resp = GenerateRandomPlaylist(userSession, resp, sessionU, musicU, nouns, adjectives, rng)
 				} else if strings.Contains(r.Request.Command, models.LetsPlay) {
 					userSession.GameState = models.ChooseGenreState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
@@ -122,13 +120,11 @@ func MainHandler(r marusia.Request,
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else {
 					// ищем названного исполнителя и начинаем игру
-					resp = SelectArtist(
-						userSession, r.Request.Command, resp, musicU, r.Session.SessionID, rng,
-					)
+					resp = SelectArtist(userSession, r.Request.Command, resp, musicU, rng)
 					logrus.Debug("ArtistRequest", r, userSession)
 				}
 				// ищем названного исполнителя и начинаем игру
-				resp = SelectArtist(userSession, r.Request.Command, resp, musicU, r.Session.SessionID, rng)
+				resp = SelectArtist(userSession, r.Request.Command, resp, musicU, rng)
 				logrus.Debug("ArtistRequest", r, userSession)
 
 			case models.StatusPlaying:
