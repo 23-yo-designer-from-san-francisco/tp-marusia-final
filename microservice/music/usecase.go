@@ -9,4 +9,6 @@ type Usecase interface {
 	GetMusicByGenre(genre string) ([]models.VKTrack, error)
 	GetAllMusic() ([]models.VKTrack, error)
 	GetGenreFromHumanGenre(humanGenre string) (string, error)
+	GetRandomMusic(limit int) ([]models.VKTrack, error)
+	GetRandomMusicByGenre(limit int, humanGenre string) ([]models.VKTrack, error)
 }

@@ -32,6 +32,7 @@ const (
 	StatusCompetition
 	StatusChooseArtist
 	StatusGeneratedPlaylist
+	StatusPlaylistFinished
 )
 
 const (

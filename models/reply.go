@@ -24,10 +24,13 @@ func GetScoreText(userSession *Session) string {
 	return score
 }
 
-func SayIfPlaylistFinished(userSession *Session, str string) string {
-	if userSession.TrackCounter >= len(userSession.CurrentPlaylist) {
+//Функция, меняющая state вне main. Хз, норм ли. По другому не придумал.
+func CheckPlaylistFinished(userSession *Session, str string) string {
+	if len(userSession.CurrentPlaylist) == 0 {
 		str = fmt.Sprintf("%s %s", str, PlaylistFinished)
+		userSession.GameState = PlaylistFinishedState
 	}
+
 	return str
 }
 
@@ -39,7 +42,7 @@ func LosePhrase(userSession *Session) (string, string) {
 	str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
 		SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
 
-	str = SayIfPlaylistFinished(userSession, str)
+	str = CheckPlaylistFinished(userSession, str)
 
 	if userSession.Fails%4 == 0 && userSession.Fails != 0 {
 		str = fmt.Sprintf("%s %s", str, Notify)
@@ -51,8 +54,8 @@ func LosePhrase(userSession *Session) (string, string) {
 func WinPhrase(userSession *Session) (string, string) {
 	textString := fmt.Sprintf("%s %s %s %s", YouGuessText, GetScoreText(userSession), ToContinue, ToStop)
 	ttsString := fmt.Sprintf("%s %s %s %s", YouGuessTTS, SaySongInfoString(userSession), ToContinue, ToStop)
-	textString = SayIfPlaylistFinished(userSession, textString)
-	ttsString = SayIfPlaylistFinished(userSession, ttsString)
+	textString = CheckPlaylistFinished(userSession, textString)
+	ttsString = CheckPlaylistFinished(userSession, ttsString)
 	return textString, ttsString
 }
 
@@ -90,6 +93,11 @@ func ChooseArtistPhrase() (string, string) {
 
 func CompetitionRulesPhrase() (string, string) {
 	str := CompetitionRules
+	return str, str
+}
+
+func PlaylistFinishedPhrase() (string, string) {
+	str := PlaylistFinished
 	return str, str
 }
 

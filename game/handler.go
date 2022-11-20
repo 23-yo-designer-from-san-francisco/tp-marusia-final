@@ -37,7 +37,6 @@ func MainHandler(r marusia.Request,
 			logrus.Debug("OnInterrupt", r, userSession)
 			resp.Text, resp.TTS = models.GoodBye, models.GoodBye
 			resp.EndSession = true
-			//TODO перенести сессии в базку или редиску
 			err := sessionU.DeleteSession(r.Session.SessionID)
 			if err != nil {
 				log.Error(err.Error())
@@ -215,6 +214,15 @@ func MainHandler(r marusia.Request,
 			case models.StatusGeneratedPlaylist:
 				userSession.GameState = models.NewGameState
 				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
+			case models.StatusPlaylistFinished:
+				resp.Text, resp.TTS = "", ""
+				if userSession.CompetitionMode {
+					resp.Text = models.GetScoreText(userSession)
+					resp.TTS = models.GetScoreText(userSession)
+				}
+				standartText, standartTTS := userSession.GameState.SayStandartPhrase()
+				resp.Text += standartText
+				resp.TTS += standartTTS
 			default:
 				resp.Text, resp.TTS = models.IDontUnderstandYouPhrase()
 			}

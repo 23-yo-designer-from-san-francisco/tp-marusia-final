@@ -28,7 +28,6 @@ func (mD *MusicDelivery) CreateAllMusic(c *gin.Context) {
 	log.Debug(message + "started")
 
 	vkTracks := []models.VKTrack{}
-	//err := json.NewDecoder(c.Request.Body).Decode(&vkTracks)
 	err := c.ShouldBindJSON(&vkTracks)
 	if err != nil {
 		log.Error(message + "err = ", err)
