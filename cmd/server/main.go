@@ -60,7 +60,7 @@ func main() {
 	}
 
 	adjectives := utils.ReadCsvFile("../../config/adjectives.txt")
-	nouns := utils.ReadCsvFile("../../config/output.txt")
+	nouns := utils.ReadCsvFile("../../config/nouns.txt")
 
 	musicR := musicRepo.NewMusicRepository(postgresDB)
 	musicU := musicUsecase.NewMusicUsecase(musicR)

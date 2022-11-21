@@ -66,6 +66,7 @@ type Session struct {
 	GameState       *State
 	CurrentPlaylist []VKTrack
 	CompetitionMode bool
+	KeyPhrase       string
 }
 
 func NewSession() *Session {

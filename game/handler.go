@@ -72,8 +72,6 @@ func MainHandler(r marusia.Request,
 				if strings.Contains(r.Request.Command, models.Competition) {
 					userSession.GameState = models.CompetitonRulesState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
-				} else if strings.Contains(r.Request.Command, models.RandomPlaylist) {
-					resp = GenerateRandomPlaylist(userSession, resp, sessionU, musicU, nouns, adjectives, rng)
 				} else if strings.Contains(r.Request.Command, models.LetsPlay) {
 					userSession.GameState = models.ChooseGenreState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
@@ -106,7 +104,7 @@ func MainHandler(r marusia.Request,
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else {
 					// ищем названный жанр и начинаем игру
-					resp = SelectGenre(userSession, r.Request.Command, resp, musicU, rng)
+					resp = SelectGenre(userSession, r.Request.Command, nouns, adjectives, resp, musicU, sessionU, rng)
 				}
 				logrus.Debug("GenresResponse", r, userSession)
 
@@ -122,13 +120,9 @@ func MainHandler(r marusia.Request,
 					// выход обратно к жанрам
 					userSession.GameState = models.ChooseGenreState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
-				} else {
-					// ищем названного исполнителя и начинаем игру
-					resp = SelectArtist(userSession, r.Request.Command, resp, musicU, rng)
-					logrus.Debug("ArtistRequest", r, userSession)
-				}
+				} 
 				// ищем названного исполнителя и начинаем игру
-				resp = SelectArtist(userSession, r.Request.Command, resp, musicU, rng)
+				resp = SelectArtist(userSession, r.Request.Command, nouns, adjectives, resp, musicU, sessionU, rng)
 				logrus.Debug("ArtistRequest", r, userSession)
 
 			case models.StatusPlaying:
@@ -240,6 +234,7 @@ func MainHandler(r marusia.Request,
 					return
 				}
 				userSession.CurrentGenre = r.Request.Command
+				userSession.KeyPhrase = r.Request.Command
 				userSession.CurrentPlaylist = playlist
 				userSession.CompetitionMode = true
 				str := fmt.Sprintf("%s%d ", "Я нашла этот плейлист. Количество треков:", len(playlist))

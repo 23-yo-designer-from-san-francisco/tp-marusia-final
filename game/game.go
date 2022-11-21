@@ -2,18 +2,19 @@ package game
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"guessTheSongMarusia/microservice/music"
-	"guessTheSongMarusia/microservice/music/usecase"
 	"guessTheSongMarusia/microservice/user"
 	"guessTheSongMarusia/models"
 	"math/rand"
+	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/SevereCloud/vksdk/v2/marusia"
 )
 
-const TRACKS_IN_RAND_PLAYLIST = 10
+const TRACKS_IN_RAND_PLAYLIST = 8
 
 func StartGame(userSession *models.Session, resp marusia.Response) marusia.Response {
 	//TODO userSession.CurrentGenre тут выбрать жанр нужный
@@ -63,6 +64,9 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
 		} else {
 			preWin = fmt.Sprintf("Вы выбрали жанр «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
+		}
+		if userSession.CompetitionMode{
+			preWin = fmt.Sprintf("%s «%s». %s","Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase), preWin) 
 		}
 	}
 
@@ -133,15 +137,43 @@ func GenerateRandomPlaylist(userSession *models.Session, resp marusia.Response, 
 	return resp
 }
 
-func SelectGenre(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase, rng *rand.Rand) marusia.Response {
+func SelectGenre(userSession *models.Session, command string, nouns []string, adjectives []string, 
+		resp marusia.Response, mU music.Usecase, sU user.SessionUsecase, rng *rand.Rand) marusia.Response {
 	var tracks []models.VKTrack
 	var err error
 	var genre string
 	if command == "любой" {
-		tracks, err = mU.GetAllMusic()
+		if userSession.CompetitionMode {
+			tracks, err = mU.GetRandomMusic(TRACKS_IN_RAND_PLAYLIST)
+			if err != nil {
+				resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
+				return resp
+			}
+			keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
+			err = sU.SavePlaylist(keyPhrase,tracks)
+			if err != nil {
+				resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
+				return resp
+			}
+			userSession.KeyPhrase = keyPhrase
+		} else {
+			tracks, err = mU.GetAllMusic()
+		}
 		genre = "Любой"
 	} else {
-		tracks, _ = mU.GetMusicByGenre(command)
+		if userSession.CompetitionMode {
+			tracks, _ = mU.GetRandomMusicByGenre(TRACKS_IN_RAND_PLAYLIST, command)
+			keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
+			userSession.KeyPhrase = keyPhrase
+			err = sU.SavePlaylist(keyPhrase,tracks)
+			if err != nil {
+				resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
+				return resp
+			}
+			userSession.KeyPhrase = keyPhrase
+		} else {
+			tracks, _ = mU.GetMusicByGenre(command)
+		}
 		genre, err = mU.GetGenreFromHumanGenre(command)
 	}
 
@@ -166,8 +198,27 @@ func SelectGenre(userSession *models.Session, command string, resp marusia.Respo
 	return resp
 }
 
-func SelectArtist(userSession *models.Session, command string, resp marusia.Response, mU *usecase.MusicUsecase, rng *rand.Rand) marusia.Response {
-	tracks, artist, err := mU.GetSongsByArtist(command)
+func SelectArtist(userSession *models.Session, command string, nouns []string, adjectives []string, 
+		resp marusia.Response, mU music.Usecase, sU user.SessionUsecase, rng *rand.Rand) marusia.Response {
+	var tracks []models.VKTrack
+	var artist string
+	var err error
+	if userSession.CompetitionMode {
+		tracks, artist, err = mU.GetRandomMusicByArtist(TRACKS_IN_RAND_PLAYLIST, command)
+		if err != nil {
+			resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
+			return resp
+		}
+		keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
+		userSession.KeyPhrase = keyPhrase
+		err = sU.SavePlaylist(keyPhrase,tracks)
+		if err != nil {
+			resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
+			return resp
+		}
+	} else {
+		tracks, artist, err = mU.GetSongsByArtist(command)
+	}
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -178,8 +229,8 @@ func SelectArtist(userSession *models.Session, command string, resp marusia.Resp
 	}
 
 	userSession.TrackCounter = 0
-	userSession.GameMode = models.ArtistMode
 	userSession.CurrentGenre = artist
+	userSession.GameMode = models.ArtistMode
 	userSession.CurrentPlaylist = tracks
 	rng.Seed(time.Now().UnixNano())
 	rng.Shuffle(len(userSession.CurrentPlaylist), func(i, j int) {

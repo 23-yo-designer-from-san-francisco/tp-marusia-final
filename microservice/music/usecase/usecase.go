@@ -145,7 +145,11 @@ func (mU *MusicUsecase) GetRandomMusic(limit int) ([]models.VKTrack, error) {
 	return mU.musicRepository.GetRandomMusic(limit)
 } 
 
-func (mU *MusicUsecase) GetRandomMusicByGenre(limit int, human_genre string) ([]models.VKTrack, error) {
-	return mU.musicRepository.GetRandomMusicByGenre(limit, human_genre)
+func (mU *MusicUsecase) GetRandomMusicByGenre(limit int, humanGenre string) ([]models.VKTrack, error) {
+	return mU.musicRepository.GetRandomMusicByGenre(limit, humanGenre)
 
+}
+
+func (mU *MusicUsecase) GetRandomMusicByArtist(limit int, humanArtist string) ([]models.VKTrack, string, error) {
+	return mU.musicRepository.GetRandomMusicByArtist(limit, humanArtist)
 }

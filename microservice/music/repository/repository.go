@@ -102,6 +102,23 @@ const (
 			where $1 = ANY(g.human_genres)
 			order by random()
 			limit $2;`
+	
+	getRandomMusicByArtist = `
+		select 
+    	m.id,
+		m.title,
+		m.artist,
+		m.duration_two_url,
+		m.duration_three_url,
+		m.duration_five_url,
+		m.duration_fifteen_url,
+		m.human_titles
+		from music as m 
+			join artist_music as am on m.id = am.music_id 
+			join artist as a on a.id = am.artist_id 
+			where $1 = ANY(a.human_artists)
+			order by random()
+			limit $2;`
 )
 
 type MusicRepository struct {
@@ -299,7 +316,7 @@ func (mR *MusicRepository) GetRandomMusic(limit int) ([]models.VKTrack, error) {
 
 func (mR *MusicRepository) GetRandomMusicByGenre(limit int, humanGenre string) ([]models.VKTrack, error) {
 	var VKTracks = []models.VKTrack{}
-	err := mR.db.Select(&VKTracks, getRandomMusicByGenre, limit, humanGenre)
+	err := mR.db.Select(&VKTracks, getRandomMusicByGenre, humanGenre, limit)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -311,4 +328,27 @@ func (mR *MusicRepository) GetRandomMusicByGenre(limit int, humanGenre string) (
 		return nil, err
 	}
 	return VKTracks, nil
+}
+
+func (mR *MusicRepository) GetRandomMusicByArtist(limit int, humanArtist string) ([]models.VKTrack, string, error) {
+	var VKTracks = []models.VKTrack{}
+	err := mR.db.Select(&VKTracks, getRandomMusicByArtist, humanArtist, limit)
+	if err != nil {
+		log.Error(err)
+		return nil, "", err
+	}
+
+	var artist string
+	err = mR.db.Get(&artist, getArtistFromHumanArtist, humanArtist)
+	if err != nil {
+		log.Error(err)
+		return nil, "", err
+	}
+
+	VKTracks, err = mR.fillTracksWithArtists(VKTracks)
+	if err != nil {
+		log.Error(err)
+		return nil, "", err
+	}
+	return VKTracks, artist, nil
 }

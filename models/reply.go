@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"strings"
 )
 
 //Phrase должны возвращать (string, string) -> resp.Text, resp.TTS
@@ -29,6 +30,9 @@ func CheckPlaylistFinished(userSession *Session, str string) string {
 	if len(userSession.CurrentPlaylist) == 0 {
 		str = fmt.Sprintf("%s %s", str, PlaylistFinished)
 		userSession.GameState = PlaylistFinishedState
+		if userSession.CompetitionMode {
+			str = fmt.Sprintf("%s %s %s", str, "Ключевая фраза вашего плейлиста:", strings.ToTitle(userSession.KeyPhrase))
+		}
 	}
 
 	return str

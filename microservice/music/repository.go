@@ -11,4 +11,5 @@ type Repository interface {
 	CreateTrack(track *models.VKTrack) (error)
 	GetRandomMusic(limit int) ([]models.VKTrack, error)
 	GetRandomMusicByGenre(limit int, humanGenre string) ([]models.VKTrack, error)
+	GetRandomMusicByArtist(limit int, humanArtist string) ([]models.VKTrack, string, error)
 }
