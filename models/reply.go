@@ -101,6 +101,11 @@ func PlaylistFinishedPhrase() (string, string) {
 	return str, str
 }
 
+func KeyPhrasePlaylistPhrase() (string, string) {
+	str := KeyPhrasePlaylist
+	return str, str
+}
+
 func StandartErrorPhrase() (string, string) {
 	str := ErrorHappend
 	return str, str

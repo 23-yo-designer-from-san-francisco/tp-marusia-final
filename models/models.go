@@ -33,6 +33,7 @@ const (
 	StatusChooseArtist
 	StatusGeneratedPlaylist
 	StatusPlaylistFinished
+	StatusKeyPhrasePlaylist
 )
 
 const (

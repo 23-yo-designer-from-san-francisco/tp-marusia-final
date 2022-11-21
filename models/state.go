@@ -35,3 +35,4 @@ var NewCompetitionState = NewState(StatusNewCompetition, CompetitionPhrase, Stan
 var CompetitonRulesState = NewState(StatusCompetitionRules, CompetitionRulesPhrase, StandartErrorPhrase)
 var ChooseArtistState = NewState(StatusChooseArtist, ChooseArtistPhrase, StandartErrorPhrase)
 var PlaylistFinishedState = NewState(StatusPlaylistFinished, PlaylistFinishedPhrase, StandartErrorPhrase)
+var KeyPhrasePlaylistState = NewState(StatusKeyPhrasePlaylist, KeyPhrasePlaylistPhrase, StandartErrorPhrase)
