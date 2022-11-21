@@ -1,8 +1,7 @@
 package game
 
 import (
-	"github.com/SevereCloud/vksdk/v2/marusia"
-	"github.com/sirupsen/logrus"
+	"fmt"
 	musicUsecase "guessTheSongMarusia/microservice/music/usecase"
 	"guessTheSongMarusia/microservice/user"
 	"guessTheSongMarusia/models"
@@ -10,6 +9,9 @@ import (
 	"guessTheSongMarusia/utils"
 	"math/rand"
 	"strings"
+
+	"github.com/SevereCloud/vksdk/v2/marusia"
+	"github.com/sirupsen/logrus"
 )
 
 func MainHandler(r marusia.Request,
@@ -74,6 +76,9 @@ func MainHandler(r marusia.Request,
 					resp = GenerateRandomPlaylist(userSession, resp, sessionU, musicU, nouns, adjectives, rng)
 				} else if strings.Contains(r.Request.Command, models.LetsPlay) {
 					userSession.GameState = models.ChooseGenreState
+					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
+				} else if strings.Contains(r.Request.Command, models.KeyPhrase) {
+					userSession.GameState = models.KeyPhrasePlaylistState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				}
 				logrus.Debug("NewGameResponse", r, userSession)
@@ -223,6 +228,22 @@ func MainHandler(r marusia.Request,
 				standartText, standartTTS := userSession.GameState.SayStandartPhrase()
 				resp.Text += standartText
 				resp.TTS += standartTTS
+			case models.StatusKeyPhrasePlaylist:
+				playlist, err := sessionU.GetPlaylist(r.Request.Command)
+				if err != nil {
+					resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
+					return
+				}
+				length := len(playlist)
+				if length == 0 {
+					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
+					return
+				}
+				userSession.CurrentGenre = r.Request.Command
+				userSession.CurrentPlaylist = playlist
+				str := fmt.Sprintf("%s%d ", "Я нашла этот плейлист. Количество треков:", len(playlist))
+				resp = StartGame(userSession, resp)
+				resp.Text, resp.TTS = str + resp.Text, str + resp.TTS
 			default:
 				resp.Text, resp.TTS = models.IDontUnderstandYouPhrase()
 			}
