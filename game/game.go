@@ -65,8 +65,8 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 		} else {
 			preWin = fmt.Sprintf("Вы выбрали жанр «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
 		}
-		if userSession.CompetitionMode{
-			preWin = fmt.Sprintf("%s «%s». %s","Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase), preWin) 
+		if userSession.CompetitionMode {
+			preWin = fmt.Sprintf("%s «%s». %s", "Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase), preWin)
 		}
 	}
 
@@ -129,16 +129,22 @@ func GenerateRandomPlaylist(userSession *models.Session, resp marusia.Response, 
 	userSession.CurrentGenre = "Любой"
 	userSession.GameMode = models.GenreMode
 	userSession.CurrentPlaylist = tracks
-	if err := sU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks[:TRACKS_IN_RAND_PLAYLIST]); err != nil {
-		logrus.Error(err)
+	playlistTracks := tracks[:TRACKS_IN_RAND_PLAYLIST]
+	logrus.Debug("Saving playlist")
+	for {
+		err = sU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), playlistTracks)
+		logrus.Debug("REPEAT")
+		if err == nil {
+			break
+		}
 	}
 
 	resp = StartGame(userSession, resp)
 	return resp
 }
 
-func SelectGenre(userSession *models.Session, command string, nouns []string, adjectives []string, 
-		resp marusia.Response, mU music.Usecase, sU user.SessionUsecase, rng *rand.Rand) marusia.Response {
+func SelectGenre(userSession *models.Session, command string, nouns []string, adjectives []string,
+	resp marusia.Response, mU music.Usecase, sU user.SessionUsecase, rng *rand.Rand) marusia.Response {
 	var tracks []models.VKTrack
 	var err error
 	var genre string
@@ -150,7 +156,14 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 				return resp
 			}
 			keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
-			err = sU.SavePlaylist(keyPhrase,tracks)
+			logrus.Debug("Saving playlist in SelectGenre (any)")
+			for {
+				err = sU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks)
+				logrus.Debug("REPEAT")
+				if err == nil {
+					break
+				}
+			}
 			if err != nil {
 				resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
 				return resp
@@ -163,12 +176,16 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 	} else {
 		if userSession.CompetitionMode {
 			tracks, _ = mU.GetRandomMusicByGenre(TRACKS_IN_RAND_PLAYLIST, command)
-			keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
-			userSession.KeyPhrase = keyPhrase
-			err = sU.SavePlaylist(keyPhrase,tracks)
-			if err != nil {
-				resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
-				return resp
+
+			logrus.Debug("Saving playlist in SelectGenre")
+			var keyPhrase string
+			for {
+				keyPhrase = GeneratePlaylistName(nouns, adjectives, rng)
+				err = sU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks)
+				logrus.Debug("REPEAT")
+				if err == nil {
+					break
+				}
 			}
 			userSession.KeyPhrase = keyPhrase
 		} else {
@@ -198,8 +215,8 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 	return resp
 }
 
-func SelectArtist(userSession *models.Session, command string, nouns []string, adjectives []string, 
-		resp marusia.Response, mU music.Usecase, sU user.SessionUsecase, rng *rand.Rand) marusia.Response {
+func SelectArtist(userSession *models.Session, command string, nouns []string, adjectives []string,
+	resp marusia.Response, mU music.Usecase, sU user.SessionUsecase, rng *rand.Rand) marusia.Response {
 	var tracks []models.VKTrack
 	var artist string
 	var err error
@@ -209,9 +226,18 @@ func SelectArtist(userSession *models.Session, command string, nouns []string, a
 			resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
 			return resp
 		}
-		keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
+
+		logrus.Debug("Saving playlist in SelectArtist")
+		var keyPhrase string
+		for {
+			keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
+			err = sU.SavePlaylist(keyPhrase, tracks)
+			logrus.Debug("REPEAT")
+			if err == nil {
+				break
+			}
+		}
 		userSession.KeyPhrase = keyPhrase
-		err = sU.SavePlaylist(keyPhrase,tracks)
 		if err != nil {
 			resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
 			return resp

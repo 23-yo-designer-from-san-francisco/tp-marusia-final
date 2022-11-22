@@ -120,7 +120,7 @@ func MainHandler(r marusia.Request,
 					// выход обратно к жанрам
 					userSession.GameState = models.ChooseGenreState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
-				} 
+				}
 				// ищем названного исполнителя и начинаем игру
 				resp = SelectArtist(userSession, r.Request.Command, nouns, adjectives, resp, musicU, sessionU, rng)
 				logrus.Debug("ArtistRequest", r, userSession)
@@ -237,9 +237,9 @@ func MainHandler(r marusia.Request,
 				userSession.KeyPhrase = r.Request.Command
 				userSession.CurrentPlaylist = playlist
 				userSession.CompetitionMode = true
-				str := fmt.Sprintf("%s%d ", "Я нашла этот плейлист. Количество треков:", len(playlist))
+				str := fmt.Sprintf("%s%d ", "Я нашла этот плейлист. Количество треков: ", len(playlist))
 				resp = StartGame(userSession, resp)
-				resp.Text, resp.TTS = str + resp.Text, str + resp.TTS
+				resp.Text, resp.TTS = str+resp.Text, str+resp.TTS
 			default:
 				resp.Text, resp.TTS = models.IDontUnderstandYouPhrase()
 			}
