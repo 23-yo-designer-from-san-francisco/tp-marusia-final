@@ -92,10 +92,11 @@ func main() {
 	r.Use(gin.Recovery())
 	config := cors.DefaultConfig()
   	config.AllowOrigins = []string{"https://user167920556-advymom2.wormhole.vk-apps.com"}
-	r.Use(cors.New(config))
 	r.Any("/", gin.WrapF(mywh.HandleFunc))
 	musicRouter := r.Group("/music")
+	musicRouter.Use(cors.New(config))
 	playlistRouter := r.Group("/playlists")
+	playlistRouter.Use(cors.New(config))
 	router.MusicEndpoints(musicRouter, musicD)
 	router.PlaylistEndpoints(playlistRouter, playlistD)
 
