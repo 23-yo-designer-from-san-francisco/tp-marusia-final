@@ -22,7 +22,20 @@ const Home = ({id, showLoader}) => {
     }
 
     async function savePlaylist() {
-        await fetch(`${BASE_URL}/playlists/create`, {});
+        const tr = [];
+        console.log(1, selectedTracks);
+        for (const [key, value] of Object.entries(selectedTracks)) {
+            if (value) {
+                tr.push(tracks[key - 1].id)
+            }
+        }
+        await fetch(`${BASE_URL}/playlists/create`, {
+            method: 'POST',
+            body: JSON.stringify({
+                title_key: titleKey,
+                music_ids: tr,
+            })
+        });
     }
 
     useEffect(() => {
@@ -35,10 +48,10 @@ const Home = ({id, showLoader}) => {
             <Group header={<Header mode="secondary">Название плейлиста</Header>}>
                 <PlaylistTitle updateTitleKey={setTitleKey} showLoader={showLoader} title={playlistTitle}/>
             </Group>
+            <Button onClick={savePlaylist} sizeY={SizeType.REGULAR}>Сохранить плейлист</Button>
             <Group header={<Header mode="secondary">Доступные треки</Header>}>
                 <Tracks updateSelectedTracks={setSelectedTracks} tracks={tracks}/>
             </Group>
-            <Button onClick={savePlaylist} sizeY={SizeType.REGULAR}>Сохранить плейлист</Button>
         </Panel>
     );
 };
