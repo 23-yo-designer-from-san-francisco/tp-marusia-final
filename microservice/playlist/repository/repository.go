@@ -53,3 +53,23 @@ func (pR *PlaylistRepository) GetPlaylist(title string) ([]models.VKTrack, error
 	}
 	return tracks, nil
 }
+
+func (pR *PlaylistRepository) SaveTitle(titleKey, title string) (error) {
+	sessionTillTime := time.Now().Add(models.DAY).Unix()
+	expiration := time.Unix(sessionTillTime, 0)
+	err := pR.redis.Set(titleKey, title, time.Until(expiration)).Err()
+	if err != nil {
+		logrus.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (pR *PlaylistRepository) GetTitle(titleKey string) (string, error) {
+	title, err := pR.redis.Get(titleKey).Result()
+	if err != nil {
+		logrus.Error(err)
+		return "", err
+	}
+	return title, nil
+}

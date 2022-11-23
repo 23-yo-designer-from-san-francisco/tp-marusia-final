@@ -43,25 +43,31 @@ func (mD *MusicDelivery) CreateAllMusic(c *gin.Context) {
 	c.JSON(http.StatusOK, "OK")
 }
 
-func (mD *MusicDelivery) GetSongsByArtists(c *gin.Context) {
-	message := logMessage + "GetSongsByArtists:"
+func (mD *MusicDelivery) GetTracks(c *gin.Context) {
+	message := logMessage + "GetTracks:"
 	log.Debug(message + "started")
+
+	var resultSongs []models.VKTrack
+	var err error
 
 	artist := c.Query("artist")
 	if artist == "" {
-		c.JSON(http.StatusOK, "No artist in query param")
-		return
+		resultSongs, err = mD.musicUsecase.GetAllMusic()
+	} else {
+		resultSongs, _, err = mD.musicUsecase.GetSongsByArtist(artist)
 	}
 
-	resultSongs, _, err := mD.musicUsecase.GetSongsByArtist(artist)
 	if err != nil {
 		c.JSON(http.StatusOK, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, resultSongs)
-
-}
-
-func (mD *MusicDelivery) GetAllTracks(c *gin.Context) {
-
+	var miniAppTracks []models.MiniAppTrack
+	for _, song := range resultSongs {
+		miniAppTracks = append(miniAppTracks, models.MiniAppTrack{
+			ID: song.ID,
+			Title: song.Title,
+			Artist: song.Artist,
+		})
+	}
+	c.JSON(http.StatusOK, miniAppTracks)
 }

@@ -119,6 +119,8 @@ const (
 			where $1 = ANY(a.human_artists)
 			order by random()
 			limit $2;`
+
+	getMusicByID = `select * from music where id = $1;`
 )
 
 type MusicRepository struct {
@@ -141,6 +143,15 @@ func(mR *MusicRepository) fillTracksWithArtists(VKTracks []models.VKTrack) ([]mo
 		}
 	}
 	return VKTracks, nil
+}
+
+func (mR *MusicRepository) GetMusicByID(musicId int) (*models.VKTrack, error) {
+	var track models.VKTrack
+	err := mR.db.Get(&track, getMusicByID, &musicId)
+	if err != nil {
+		return nil, err
+	}
+	return &track, nil
 }
 
 func (mR *MusicRepository) GetGenres() ([]string, error) {
@@ -229,13 +240,11 @@ func (mR *MusicRepository) GetArtistsInfoByMusicID(musicID int) (map[string][]st
 	}
 
 	var artistStructs []artistInfo
-	log.Debug("MusicID = ", musicID)
 	err := mR.db.Select(&artistStructs, selectArtistsInfoByMusicId, &musicID)
 	if err != nil {
 		log.Error("Смотрим ошибку4", err)
 		return nil, err
 	}
-	log.Debug("artistStructs = ", artistStructs)
 	artistsMap := make(map[string][]string)
 	for _, artist := range artistStructs {
 		log.Debug(artist)
