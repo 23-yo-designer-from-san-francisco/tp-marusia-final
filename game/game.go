@@ -3,7 +3,7 @@ package game
 import (
 	"fmt"
 	"guessTheSongMarusia/microservice/music"
-	"guessTheSongMarusia/microservice/user"
+	"guessTheSongMarusia/microservice/playlist"
 	"guessTheSongMarusia/models"
 	"math/rand"
 	"strings"
@@ -115,7 +115,7 @@ func CloseAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 	return resp
 }
 
-func GenerateRandomPlaylist(userSession *models.Session, resp marusia.Response, sU user.SessionUsecase, mU music.Usecase,
+func GenerateRandomPlaylist(userSession *models.Session, resp marusia.Response, pU playlist.Usecase, mU music.Usecase,
 	nouns []string, adjectives []string, rng *rand.Rand) marusia.Response {
 	tracks, err := mU.GetAllMusic()
 	if err != nil {
@@ -132,7 +132,7 @@ func GenerateRandomPlaylist(userSession *models.Session, resp marusia.Response, 
 	playlistTracks := tracks[:TRACKS_IN_RAND_PLAYLIST]
 	logrus.Debug("Saving playlist")
 	for {
-		err = sU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), playlistTracks)
+		err = pU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), playlistTracks)
 		logrus.Debug("REPEAT")
 		if err == nil {
 			break
@@ -144,7 +144,7 @@ func GenerateRandomPlaylist(userSession *models.Session, resp marusia.Response, 
 }
 
 func SelectGenre(userSession *models.Session, command string, nouns []string, adjectives []string,
-	resp marusia.Response, mU music.Usecase, sU user.SessionUsecase, rng *rand.Rand) marusia.Response {
+	resp marusia.Response, mU music.Usecase, pU playlist.Usecase, rng *rand.Rand) marusia.Response {
 	var tracks []models.VKTrack
 	var err error
 	var genre string
@@ -158,7 +158,7 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 			keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
 			logrus.Debug("Saving playlist in SelectGenre (any)")
 			for {
-				err = sU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks)
+				err = pU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks)
 				logrus.Debug("REPEAT")
 				if err == nil {
 					break
@@ -181,7 +181,7 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 			var keyPhrase string
 			for {
 				keyPhrase = GeneratePlaylistName(nouns, adjectives, rng)
-				err = sU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks)
+				err = pU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks)
 				logrus.Debug("REPEAT")
 				if err == nil {
 					break
@@ -216,7 +216,7 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 }
 
 func SelectArtist(userSession *models.Session, command string, nouns []string, adjectives []string,
-	resp marusia.Response, mU music.Usecase, sU user.SessionUsecase, rng *rand.Rand) marusia.Response {
+	resp marusia.Response, mU music.Usecase, pU playlist.Usecase, rng *rand.Rand) marusia.Response {
 	var tracks []models.VKTrack
 	var artist string
 	var err error
@@ -231,7 +231,7 @@ func SelectArtist(userSession *models.Session, command string, nouns []string, a
 		var keyPhrase string
 		for {
 			keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
-			err = sU.SavePlaylist(keyPhrase, tracks)
+			err = pU.SavePlaylist(keyPhrase, tracks)
 			logrus.Debug("REPEAT")
 			if err == nil {
 				break

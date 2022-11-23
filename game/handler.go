@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	musicUsecase "guessTheSongMarusia/microservice/music/usecase"
+	playlistUsecase "guessTheSongMarusia/microservice/playlist/usecase"
 	"guessTheSongMarusia/microservice/user"
 	"guessTheSongMarusia/models"
 	log "guessTheSongMarusia/pkg/logger"
@@ -15,8 +16,8 @@ import (
 )
 
 func MainHandler(r marusia.Request,
-	sessionU user.SessionUsecase, musicU *musicUsecase.MusicUsecase, rng *rand.Rand,
-	adjectives []string, nouns []string) (resp marusia.Response) {
+	sessionU user.SessionUsecase, musicU *musicUsecase.MusicUsecase, playlistU *playlistUsecase.PlaylistUsecase,
+	rng *rand.Rand, adjectives []string, nouns []string) (resp marusia.Response) {
 	log.Debug("Got command:", r.Request.Command)
 	userSession, err := sessionU.GetSession(r.Session.SessionID)
 	if err != nil {
@@ -104,7 +105,7 @@ func MainHandler(r marusia.Request,
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else {
 					// ищем названный жанр и начинаем игру
-					resp = SelectGenre(userSession, r.Request.Command, nouns, adjectives, resp, musicU, sessionU, rng)
+					resp = SelectGenre(userSession, r.Request.Command, nouns, adjectives, resp, musicU, playlistU, rng)
 				}
 				logrus.Debug("GenresResponse", r, userSession)
 
@@ -122,7 +123,7 @@ func MainHandler(r marusia.Request,
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				}
 				// ищем названного исполнителя и начинаем игру
-				resp = SelectArtist(userSession, r.Request.Command, nouns, adjectives, resp, musicU, sessionU, rng)
+				resp = SelectArtist(userSession, r.Request.Command, nouns, adjectives, resp, musicU, playlistU, rng)
 				logrus.Debug("ArtistRequest", r, userSession)
 
 			case models.StatusPlaying:
@@ -223,7 +224,7 @@ func MainHandler(r marusia.Request,
 				resp.Text += standartText
 				resp.TTS += standartTTS
 			case models.StatusKeyPhrasePlaylist:
-				playlist, err := sessionU.GetPlaylist(r.Request.Command)
+				playlist, err := playlistU.GetPlaylist(r.Request.Command)
 				if err != nil {
 					resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
 					return
