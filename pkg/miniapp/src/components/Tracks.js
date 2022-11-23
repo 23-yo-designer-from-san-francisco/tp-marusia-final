@@ -1,6 +1,6 @@
-import {Group, SimpleCell, Switch} from "@vkontakte/vkui";
-import {Icon28MusicOutline} from '@vkontakte/icons';
-import {useState} from "react";
+import {FormItem, FormLayout, Group, IconButton, Input, SimpleCell, Switch} from "@vkontakte/vkui";
+import {Icon16Clear, Icon28MusicOutline} from '@vkontakte/icons';
+import React, {useState} from "react";
 
 export const Tracks = ({tracks}) => {
     let sel = {};
@@ -8,14 +8,42 @@ export const Tracks = ({tracks}) => {
         sel = {...sel, [track.id]: false};
     })
     const [selected, setSelected] = useState(sel);
+    const [renderedTracks, setRenderedTracks] = useState(tracks);
+    const textInput = React.createRef();
+    const clear = () => {
+        textInput.current.value = "";
+        setRenderedTracks(tracks);
+    };
 
     const toggleSelected = (i) => {
         setSelected({...selected, [i]: !selected[i]})
     }
 
+    const search = () => setRenderedTracks(tracks.filter((track) =>
+        `${track.artist} ${track.title}`.toLowerCase().includes(textInput.current.value.toLowerCase())));
+
     return (
         <Group>
-            {tracks.map((track) =>
+            <FormLayout>
+                <FormItem top="Поиск">
+                    <Input
+                        getRef={textInput}
+                        type="text"
+                        placeholder="Начните вводить исполнителя или название песни"
+                        onChange={search}
+                        after={
+                            <IconButton
+                                hoverMode="opacity"
+                                aria-label="Очистить поле"
+                                onClick={clear}
+                            >
+                                <Icon16Clear/>
+                            </IconButton>
+                        }
+                    />
+                </FormItem>
+            </FormLayout>
+            {renderedTracks.map((track) =>
                 <SimpleCell
                     key={track.id}
                     before={<Icon28MusicOutline/>}
