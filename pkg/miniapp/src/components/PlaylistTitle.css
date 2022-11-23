@@ -1,0 +1,17 @@
+.PlaylistTitle__title {
+    display: flex;
+    justify-content: center;
+    padding: 20px 5px;
+    font-family: "VK Sans Display", -apple-system, system-ui, Helvetica Neue, Roboto, sans-serif;
+}
+
+.PlaylistTitle__subtitle {
+    color: rgb(98, 109, 122);
+    text-align: center;
+    width: 350px;
+}
+
+.PlaylistTitle__subtitle-container {
+    display: flex;
+    justify-content: center;
+}

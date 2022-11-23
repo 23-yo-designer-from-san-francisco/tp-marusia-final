@@ -30,13 +30,13 @@ func (mD *MusicDelivery) CreateAllMusic(c *gin.Context) {
 	vkTracks := []models.VKTrack{}
 	err := c.ShouldBindJSON(&vkTracks)
 	if err != nil {
-		log.Error(message + "err = ", err)
+		log.Error(message+"err = ", err)
 		c.JSON(http.StatusOK, err.Error())
 		return
 	}
 	err = mD.musicUsecase.CreateAllMusic(vkTracks)
 	if err != nil {
-		log.Error(message + "err = ", err)
+		log.Error(message+"err = ", err)
 		c.JSON(http.StatusOK, err.Error())
 		return
 	}
@@ -59,5 +59,9 @@ func (mD *MusicDelivery) GetSongsByArtists(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, resultSongs)
+
+}
+
+func (mD *MusicDelivery) GetAllTracks(c *gin.Context) {
 
 }

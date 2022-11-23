@@ -24,6 +24,10 @@ import (
 
 	sessionRepo "guessTheSongMarusia/microservice/user/repository"
 	sessionUsecase "guessTheSongMarusia/microservice/user/usecase"
+
+	playlistDelivery "guessTheSongMarusia/microservice/playlist/delivery"
+	playlistRepo "guessTheSongMarusia/microservice/playlist/repository"
+	playlistUsecase "guessTheSongMarusia/microservice/playlist/usecase"
 )
 
 const logMessage = "server:"
@@ -66,6 +70,10 @@ func main() {
 	musicU := musicUsecase.NewMusicUsecase(musicR)
 	musicD := musicDelivery.NewMusicDelivery(musicU)
 
+	playlistR := playlistRepo.NewPlaylistRepository(redisDB)
+	playlistU := playlistUsecase.NewPlaylistUsecase(playlistR)
+	playlistD := playlistDelivery.NewPlaylistDelivery(playlistU)
+
 	sessionR := sessionRepo.NewSessionRepository(redisDB)
 	sessionU := sessionUsecase.NewUserUsecase(sessionR)
 
@@ -76,14 +84,16 @@ func main() {
 	rng.Seed(time.Now().UnixNano())
 
 	mywh.OnEvent(func(r marusia.Request) (resp marusia.Response) {
-		return game.MainHandler(r, sessionU, musicU, rng, adjectives, nouns)
+		return game.MainHandler(r, sessionU, musicU, playlistU, rng, adjectives, nouns)
 	})
 
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Any("/", gin.WrapF(mywh.HandleFunc))
 	musicRouter := r.Group("/music")
+	playlistRouter := r.Group("/playlists")
 	router.MusicEndpoints(musicRouter, musicD)
+	router.PlaylistEndpoints(playlistRouter, playlistD)
 
 	err = r.Run(":8080")
 	if err != nil {
