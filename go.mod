@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/SevereCloud/vksdk/v2 v2.15.0
 	github.com/adrg/strutil v0.3.0
+	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/jackc/pgx/v4 v4.17.2

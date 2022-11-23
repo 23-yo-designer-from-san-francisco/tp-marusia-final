@@ -10,6 +10,7 @@ import (
 	"time"
 
 	log "guessTheSongMarusia/pkg/logger"
+	"github.com/gin-contrib/cors"
 
 	"github.com/seehuhn/mt19937"
 	"github.com/sirupsen/logrus"
@@ -89,6 +90,8 @@ func main() {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
+	config := cors.DefaultConfig()
+  	config.AllowOrigins = []string{"https://user167920556-advymom2.wormhole.vk-apps.com"}
 	r.Any("/", gin.WrapF(mywh.HandleFunc))
 	musicRouter := r.Group("/music")
 	playlistRouter := r.Group("/playlists")
