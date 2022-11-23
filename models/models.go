@@ -83,7 +83,7 @@ type TracksPerGenres struct {
 }
 
 type VKTrack struct {
-	ID                      int                 `db:"id"`
+	ID                      int                 `json:"id,omitempty" db:"id"`
 	Title                   string              `json:"title,omitempty" db:"title"`
 	Artist                  string              `json:"artist,omitempty" db:"artist"`
 	Duration2               string              `json:"duration_2,omitempty" db:"duration_two_url"`
@@ -92,6 +92,22 @@ type VKTrack struct {
 	Duration15              string              `json:"duration_15,omitempty" db:"duration_fifteen_url"`
 	ArtistsWithHumanArtists map[string][]string `json:"human_artists"`
 	HumanTitles             pq.StringArray      `json:"human_titles" db:"human_titles"`
+}
+
+type MiniAppTrack struct {
+	ID                      int                 `json:"id,omitempty" db:"id"`
+	Title                   string              `json:"title,omitempty" db:"title"`
+	Artist                  string              `json:"artist,omitempty" db:"artist"`
+}
+
+type TitleInfo struct {
+	TitleKey                string              `json:"title_key,omitempty"`
+	Title                   string              `json:"title,omitempty"`
+}
+
+type MiniAppPlaylist struct {
+	TitleKey string `json:"title_key,omitempty"`
+	TracksIds []int `json:"music_ids,omitempty"`
 }
 
 func (track *VKTrack) checkTitleInAnswer(answer string) bool {

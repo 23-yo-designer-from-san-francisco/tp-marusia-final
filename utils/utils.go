@@ -2,12 +2,15 @@ package utils
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
 	"unsafe"
+
+	"github.com/seehuhn/mt19937"
 )
 
 func ContainsAny(str string, subs ...string) bool {
@@ -69,4 +72,13 @@ func RandStringBytesMaskImprSrcUnsafe(n int) string {
 	}
 
 	return *(*string)(unsafe.Pointer(&b))
+}
+
+func GeneratePlaylistName(nouns []string, adjectives []string) string {
+	rng := rand.New(mt19937.New())
+	rng.Seed(time.Now().UnixNano())
+
+	noun := nouns[rng.Int63()%int64(len(nouns))]
+	adj := adjectives[rng.Int63()%int64(len(adjectives))]
+	return fmt.Sprintf("%s %s", adj, noun)
 }

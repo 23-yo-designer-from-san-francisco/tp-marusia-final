@@ -38,7 +38,6 @@ func basicValidation(name string) string {
 	name = strings.Replace(name, "$", "s", -1)
 	name = strings.Replace(name, "é", "e", -1)
 	name = strings.Replace(name, "-", " ", -1)
-	//Если же что-то с чём-то, то нам такое не нужно
 	return strings.ToLower(name)
 }
 

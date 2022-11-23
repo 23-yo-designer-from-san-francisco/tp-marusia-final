@@ -12,4 +12,6 @@ type Repository interface {
 	GetRandomMusic(limit int) ([]models.VKTrack, error)
 	GetRandomMusicByGenre(limit int, humanGenre string) ([]models.VKTrack, error)
 	GetRandomMusicByArtist(limit int, humanArtist string) ([]models.VKTrack, string, error)
+	GetMusicByID(musicId int) (*models.VKTrack, error)
+	GetArtistsInfoByMusicID(musicID int) (map[string][]string, error)
 }

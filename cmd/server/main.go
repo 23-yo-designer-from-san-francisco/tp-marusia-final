@@ -71,7 +71,7 @@ func main() {
 	musicD := musicDelivery.NewMusicDelivery(musicU)
 
 	playlistR := playlistRepo.NewPlaylistRepository(redisDB)
-	playlistU := playlistUsecase.NewPlaylistUsecase(playlistR)
+	playlistU := playlistUsecase.NewPlaylistUsecase(adjectives, nouns, playlistR, musicR)
 	playlistD := playlistDelivery.NewPlaylistDelivery(playlistU)
 
 	sessionR := sessionRepo.NewSessionRepository(redisDB)
