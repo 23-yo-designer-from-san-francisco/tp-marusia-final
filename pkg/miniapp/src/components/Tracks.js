@@ -1,8 +1,11 @@
 import {FormItem, FormLayout, Group, IconButton, Input, SimpleCell, Switch} from "@vkontakte/vkui";
 import {Icon16Clear, Icon28MusicOutline} from '@vkontakte/icons';
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 
-export const Tracks = ({tracks}) => {
+export const Tracks = ({tracks, updateSelectedTracks}) => {
+    if (!tracks) {
+        return null;
+    }
     let sel = {};
     tracks.forEach((track) => {
         sel = {...sel, [track.id]: false};
@@ -14,6 +17,10 @@ export const Tracks = ({tracks}) => {
         textInput.current.value = "";
         setRenderedTracks(tracks);
     };
+
+    useEffect(() => {
+        updateSelectedTracks(selected);
+    }, [selected]);
 
     const toggleSelected = (i) => {
         setSelected({...selected, [i]: !selected[i]})
