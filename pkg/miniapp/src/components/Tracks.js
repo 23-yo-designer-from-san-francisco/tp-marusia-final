@@ -19,8 +19,11 @@ export const Tracks = ({tracks}) => {
         setSelected({...selected, [i]: !selected[i]})
     }
 
-    const search = () => setRenderedTracks(tracks.filter((track) =>
-        `${track.artist} ${track.title}`.toLowerCase().includes(textInput.current.value.toLowerCase())));
+    const search = () => setRenderedTracks(tracks.filter((track) => {
+        const trackFullTitle = `${track.artist} ${track.title}`.toLowerCase();
+        return trackFullTitle.includes(textInput.current.value.toLowerCase())
+            || trackFullTitle.split(' ').reverse().join(' ').includes(textInput.current.value.toLowerCase())
+    }));
 
     return (
         <Group>
