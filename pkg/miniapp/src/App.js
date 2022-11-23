@@ -25,17 +25,15 @@ const App = () => {
                 setScheme(data.scheme)
             }
         });
-
-        async function fetchData() {
-            setPopout(null);
-        }
-
-        fetchData();
     }, []);
 
     const go = e => {
         setActivePanel(e.currentTarget.dataset.to);
     };
+
+    const showLoader = (show) => {
+        setPopout(show ? <ScreenSpinner size='large'/> : null)
+    }
 
     return (
         <ConfigProvider scheme={scheme}>
@@ -44,7 +42,7 @@ const App = () => {
                     <SplitLayout popout={popout}>
                         <SplitCol>
                             <View activePanel={activePanel}>
-                                <Home id='home' go={go}/>
+                                <Home showLoader={showLoader} id='home' go={go}/>
                             </View>
                         </SplitCol>
                     </SplitLayout>
