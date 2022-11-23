@@ -46,7 +46,7 @@ func (pU *PlaylistUsecase) SavePlaylist(title string, tracks []models.VKTrack) e
 
 func (pU *PlaylistUsecase) GenerateTitle() (string, string, error) {
 	for {
-		title := utils.GeneratePlaylistName(pU.adjectives, pU.nouns)
+		title := utils.GeneratePlaylistName(pU.nouns, pU.adjectives)
 		playlist, err := pU.playlistRepository.GetPlaylist(title)
 		if err != nil && !strings.Contains(err.Error(), "redis: nil") {
 			return "", "", err
