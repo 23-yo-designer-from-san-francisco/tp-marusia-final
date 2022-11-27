@@ -257,6 +257,7 @@ func SelectArtist(userSession *models.Session, command string, nouns []string, a
 	userSession.TrackCounter = 0
 	userSession.CurrentGenre = artist
 	userSession.GameMode = models.ArtistMode
+	userSession.ArtistMatch = true
 	userSession.CurrentPlaylist = tracks
 	rng.Seed(time.Now().UnixNano())
 	rng.Shuffle(len(userSession.CurrentPlaylist), func(i, j int) {

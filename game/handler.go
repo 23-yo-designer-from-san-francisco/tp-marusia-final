@@ -72,14 +72,12 @@ func MainHandler(r marusia.Request,
 				logrus.Debug("NewGameRequest", r, userSession)
 				if strings.Contains(r.Request.Command, models.Competition) {
 					userSession.GameState = models.CompetitonRulesState
-					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else if strings.Contains(r.Request.Command, models.LetsPlay) {
 					userSession.GameState = models.ChooseGenreState
-					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else if strings.Contains(r.Request.Command, models.KeyPhrase) {
 					userSession.GameState = models.KeyPhrasePlaylistState
-					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				}
+				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				logrus.Debug("NewGameResponse", r, userSession)
 			case models.StatusChoosingGenre, models.StatusListingGenres:
 				// логика после предложения выбрать жанр
@@ -107,6 +105,7 @@ func MainHandler(r marusia.Request,
 					// ищем названный жанр и начинаем игру
 					resp = SelectGenre(userSession, r.Request.Command, nouns, adjectives, resp, musicU, playlistU, rng)
 				}
+				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				logrus.Debug("GenresResponse", r, userSession)
 
 			case models.StatusChooseArtist:
@@ -140,35 +139,17 @@ func MainHandler(r marusia.Request,
 						userSession.MusicStarted = false
 						resp.Text, resp.TTS = models.LosePhrase(userSession)
 					} else {
-						matchTitle, matchArtists := userSession.CurrentTrack.CheckUserAnswer(r.Request.Command)
-						if !userSession.TitleMatch && !userSession.ArtistMatch && matchTitle && matchArtists {
+						matchTitle, matchArtists := userSession.CurrentTrack.CheckUserAnswer(r.Request.Command, userSession)
+						if userSession.TitleMatch && userSession.ArtistMatch {
 							logrus.Info("Guessed both")
-							userSession.ArtistMatch = true
-							userSession.TitleMatch = true
 							userSession.MusicStarted = false
 							resp.Text, resp.TTS = models.WinPhrase(userSession)
-						} else if !userSession.TitleMatch && matchTitle {
+						} else if matchTitle {
 							logrus.Info("Guessed title")
-							userSession.TitleMatch = true
-							if userSession.ArtistMatch || userSession.GameMode == models.ArtistMode {
-								// если до этого угадал исполнителя
-								logrus.Info("Guessed artist before and title now")
-								resp.Text, resp.TTS = models.WinPhrase(userSession)
-								userSession.MusicStarted = false
-							} else {
-								resp = CloseAnswerPlay(userSession, resp)
-							}
-						} else if !userSession.ArtistMatch && matchArtists {
+							resp = CloseAnswerPlay(userSession, resp)
+						} else if matchArtists {
 							logrus.Info("Guessed artist")
-							userSession.ArtistMatch = true
-							if userSession.TitleMatch {
-								// если до этого угадал название
-								logrus.Warn("Guessed title before and artist now")
-								resp.Text, resp.TTS = models.WinPhrase(userSession)
-								userSession.MusicStarted = false
-							} else {
-								resp = CloseAnswerPlay(userSession, resp)
-							}
+							resp = CloseAnswerPlay(userSession, resp)
 						} else if userSession.NextLevelLoses {
 							// если все попытки провалились
 							userSession.MusicStarted = false

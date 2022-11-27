@@ -157,8 +157,16 @@ func (track *VKTrack) checkArtistsInAnswer(answer string) bool {
 	return false
 }
 
-func (track *VKTrack) CheckUserAnswer(answer string) (bool, bool) {
-	return track.checkTitleInAnswer(answer), track.checkArtistsInAnswer(answer)
+func (track *VKTrack) CheckUserAnswer(answer string, userSession *Session) (bool, bool) {
+	matchTitle := track.checkTitleInAnswer(answer)
+	matchArtist := track.checkArtistsInAnswer(answer)
+	if matchTitle {
+		userSession.TitleMatch = true
+	}
+	if matchArtist {
+		userSession.ArtistMatch = true
+	}
+	return matchTitle, matchArtist
 }
 
 type VKTracks struct {
