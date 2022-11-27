@@ -143,27 +143,13 @@ func MainHandler(r marusia.Request,
 						matchTitle, matchArtists := userSession.CurrentTrack.CheckUserAnswer(r.Request.Command)
 						if !userSession.TitleMatch && !userSession.ArtistMatch && matchTitle && matchArtists {
 							logrus.Info("Guessed both")
-							resp.Text, resp.TTS = models.WinPhrase(userSession)
-							switch userSession.CurrentLevel {
-							case models.Two:
-								userSession.CurrentPoints += models.GuessedAttempt1
-							case models.Five:
-								userSession.CurrentPoints += models.GuessedAttempt2
-							case models.Ten:
-								userSession.CurrentPoints += models.GuessedAttempt3
-							}
+							userSession.ArtistMatch = true
+							userSession.TitleMatch = true
 							userSession.MusicStarted = false
+							resp.Text, resp.TTS = models.WinPhrase(userSession)
 						} else if !userSession.TitleMatch && matchTitle {
 							logrus.Info("Guessed title")
 							userSession.TitleMatch = true
-							switch userSession.CurrentLevel {
-							case models.Two:
-								userSession.CurrentPoints += models.GuessedAttempt1 / 2
-							case models.Five:
-								userSession.CurrentPoints += models.GuessedAttempt2 / 2
-							case models.Ten:
-								userSession.CurrentPoints += models.GuessedAttempt3 / 2
-							}
 							if userSession.ArtistMatch || userSession.GameMode == models.ArtistMode {
 								// если до этого угадал исполнителя
 								logrus.Info("Guessed artist before and title now")
@@ -175,14 +161,6 @@ func MainHandler(r marusia.Request,
 						} else if !userSession.ArtistMatch && matchArtists {
 							logrus.Info("Guessed artist")
 							userSession.ArtistMatch = true
-							switch userSession.CurrentLevel {
-							case models.Two:
-								userSession.CurrentPoints += models.GuessedAttempt1 / 2
-							case models.Five:
-								userSession.CurrentPoints += models.GuessedAttempt2 / 2
-							case models.Ten:
-								userSession.CurrentPoints += models.GuessedAttempt3 / 2
-							}
 							if userSession.TitleMatch {
 								// если до этого угадал название
 								logrus.Warn("Guessed title before and artist now")

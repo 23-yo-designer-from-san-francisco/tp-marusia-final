@@ -14,7 +14,7 @@ import (
 	"github.com/SevereCloud/vksdk/v2/marusia"
 )
 
-const TRACKS_IN_RAND_PLAYLIST = 8
+const TRACKS_IN_RAND_PLAYLIST = 5
 
 func StartGame(userSession *models.Session, resp marusia.Response) marusia.Response {
 	//TODO userSession.CurrentGenre тут выбрать жанр нужный
