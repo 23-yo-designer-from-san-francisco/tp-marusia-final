@@ -41,7 +41,7 @@ func CheckPlaylistFinished(userSession *Session, str string) string {
 // Если человек не смог угадать
 func LosePhrase(userSession *Session) (string, string) {
 	var str string
-
+	userSession = countPoints(userSession)
 	userSession.Fails += 1
 	str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
 		SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
@@ -55,7 +55,50 @@ func LosePhrase(userSession *Session) (string, string) {
 	return str, str
 }
 
+func addPoints (userSession *Session, multiplier float64) (*Session) {
+	switch userSession.CurrentLevel {
+	case Two:
+		userSession.CurrentPoints += GuessedAttempt1 * multiplier
+	case Five:
+		userSession.CurrentPoints += GuessedAttempt2 * multiplier
+	case Ten:
+		userSession.CurrentPoints += GuessedAttempt3 * multiplier
+	}
+	fmt.Println("Points: ", userSession.CurrentPoints)
+	return userSession
+}
+
+//Должна вызываться перед winPhrase and losePhrase
+func countPoints(userSession *Session) (*Session) {
+	fmt.Println("ArtistMatch: ",userSession.ArtistMatch)
+	fmt.Println("TitleMatch: ",userSession.TitleMatch)
+	//Ничего не угадали
+	if !userSession.ArtistMatch && !userSession.TitleMatch {
+		return userSession
+	}
+	//Угадали только название (Здесь не может быть в теории artistMode)
+	if userSession.TitleMatch && !userSession.ArtistMatch {
+		addPoints(userSession, 0.5)
+		return userSession
+	}
+	//Угадали только исполнителя
+	if userSession.ArtistMatch && !userSession.TitleMatch {
+		//Но мы в ArtistMode
+		if userSession.GameMode == ArtistMode {
+			return userSession
+		}
+		addPoints(userSession, 0.5)
+		return userSession
+	}
+	
+	//Угадано оба
+	addPoints(userSession, 1)
+	return userSession
+}
+
 func WinPhrase(userSession *Session) (string, string) {
+	userSession = countPoints(userSession)
+	fmt.Println("After Func Points: ", userSession.CurrentPoints)
 	textString := fmt.Sprintf("%s %s %s %s", YouGuessText, GetScoreText(userSession), ToContinue, ToStop)
 	ttsString := fmt.Sprintf("%s %s %s %s", YouGuessTTS, SaySongInfoString(userSession), ToContinue, ToStop)
 	textString = CheckPlaylistFinished(userSession, textString)

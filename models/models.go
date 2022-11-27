@@ -74,6 +74,7 @@ func NewSession() *Session {
 		PlayedTracks: make(map[int]bool),
 		GameState:    NewGameState,
 		GameMode:     GenreMode,
+		CurrentPoints: 0,
 	}
 }
 

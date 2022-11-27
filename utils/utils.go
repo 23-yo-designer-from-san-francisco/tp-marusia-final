@@ -15,6 +15,7 @@ import (
 
 func ContainsAny(str string, subs ...string) bool {
 	for _, sub := range subs {
+		fmt.Println("Str: ",str," Sub: ",sub)
 		if strings.Contains(strings.ToLower(str), strings.ToLower(sub)) {
 			return true
 		}
