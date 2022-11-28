@@ -5,6 +5,7 @@ import (
 	"guessTheSongMarusia/microservice/music"
 	"guessTheSongMarusia/microservice/playlist"
 	"guessTheSongMarusia/models"
+	"guessTheSongMarusia/utils"
 	"math/rand"
 	"strings"
 	"time"
@@ -132,7 +133,7 @@ func GenerateRandomPlaylist(userSession *models.Session, resp marusia.Response, 
 	playlistTracks := tracks[:TRACKS_IN_RAND_PLAYLIST]
 	logrus.Debug("Saving playlist")
 	for {
-		err = pU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), playlistTracks)
+		err = pU.SavePlaylist(utils.GeneratePlaylistName(nouns, adjectives), playlistTracks)
 		logrus.Debug("REPEAT")
 		if err == nil {
 			break
@@ -155,10 +156,10 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 				resp.Text, resp.TTS = userSession.GameState.SayErrorPhrase()
 				return resp
 			}
-			keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
+			keyPhrase := utils.GeneratePlaylistName(nouns, adjectives)
 			logrus.Debug("Saving playlist in SelectGenre (any)")
 			for {
-				err = pU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks)
+				err = pU.SavePlaylist(utils.GeneratePlaylistName(nouns, adjectives), tracks)
 				logrus.Debug("REPEAT")
 				if err == nil {
 					break
@@ -180,8 +181,8 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 			logrus.Debug("Saving playlist in SelectGenre")
 			var keyPhrase string
 			for {
-				keyPhrase = GeneratePlaylistName(nouns, adjectives, rng)
-				err = pU.SavePlaylist(GeneratePlaylistName(nouns, adjectives, rng), tracks)
+				keyPhrase = utils.GeneratePlaylistName(nouns, adjectives)
+				err = pU.SavePlaylist(utils.GeneratePlaylistName(nouns, adjectives), tracks)
 				logrus.Debug("REPEAT")
 				if err == nil {
 					break
@@ -230,7 +231,7 @@ func SelectArtist(userSession *models.Session, command string, nouns []string, a
 		logrus.Debug("Saving playlist in SelectArtist")
 		var keyPhrase string
 		for {
-			keyPhrase := GeneratePlaylistName(nouns, adjectives, rng)
+			keyPhrase = utils.GeneratePlaylistName(nouns, adjectives)
 			err = pU.SavePlaylist(keyPhrase, tracks)
 			logrus.Debug("REPEAT")
 			if err == nil {
@@ -257,6 +258,7 @@ func SelectArtist(userSession *models.Session, command string, nouns []string, a
 	userSession.TrackCounter = 0
 	userSession.CurrentGenre = artist
 	userSession.GameMode = models.ArtistMode
+	userSession.ArtistMatch = true
 	userSession.CurrentPlaylist = tracks
 	rng.Seed(time.Now().UnixNano())
 	rng.Shuffle(len(userSession.CurrentPlaylist), func(i, j int) {
