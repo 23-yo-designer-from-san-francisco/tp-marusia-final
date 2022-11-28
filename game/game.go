@@ -56,11 +56,7 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 		audioVkId = userSession.CurrentTrack.Duration5
 	}
 
-	if userSession.ArtistMatch && userSession.GameMode != models.ArtistMode {
-		preWin = "Вы угадали исполнителя! А ^см`ожете^ название? "
-	} else if userSession.TitleMatch {
-		preWin = "Вы угадали название! А ^см`ожете^ исполнителя? "
-	} else if userSession.TrackCounter == 1 && userSession.CurrentLevel == models.Two {
+	if userSession.TrackCounter == 1 && userSession.CurrentLevel == models.Two {
 		if userSession.GameMode == models.ArtistMode {
 			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
 		} else {

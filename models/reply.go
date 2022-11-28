@@ -19,19 +19,26 @@ func SaySongInfoString(userSession *Session) string {
 
 func GetScoreText(userSession *Session) string {
 	var score string
+	pointsStr := "баллов"
+	//От 10 до 19 оставляем баллов
+	if userSession.CurrentPoints / 10 == 1 {
+	} else if int(userSession.CurrentPoints) % 10 == 1 {
+		pointsStr = "балл"
+	} else if int(userSession.CurrentPoints) % 10 >= 2 && int(userSession.CurrentPoints) % 10 <= 4 {
+		pointsStr = "балла"
+	}
 	if userSession.CompetitionMode {
-		score = fmt.Sprintf("%s %g %s.", YourScore, userSession.CurrentPoints, "баллов")
+		score = fmt.Sprintf("%s %g %s.", YourScore, userSession.CurrentPoints, pointsStr)
 	}
 	return score
 }
 
-//Функция, меняющая state вне main. Хз, норм ли. По другому не придумал.
 func CheckPlaylistFinished(userSession *Session, str string) string {
 	if len(userSession.CurrentPlaylist) == 0 {
 		str = fmt.Sprintf("%s %s", str, PlaylistFinished)
 		userSession.GameState = PlaylistFinishedState
 		if userSession.CompetitionMode {
-			str = fmt.Sprintf("%s %s %s", str, "Ключевая фраза вашего плейлиста:", strings.ToTitle(userSession.KeyPhrase))
+			str = fmt.Sprintf("%s %s %s", str, "Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase))
 		}
 	}
 

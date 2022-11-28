@@ -139,6 +139,7 @@ func MainHandler(r marusia.Request,
 						resp.Text, resp.TTS = models.LosePhrase(userSession)
 					} else {
 						matchTitle, matchArtists := userSession.CurrentTrack.CheckUserAnswer(r.Request.Command, userSession)
+						log.Debug(matchTitle, matchArtists)
 						if userSession.TitleMatch && userSession.ArtistMatch {
 							logrus.Info("Guessed both")
 							userSession.MusicStarted = false
