@@ -105,7 +105,6 @@ func MainHandler(r marusia.Request,
 					// ищем названный жанр и начинаем игру
 					resp = SelectGenre(userSession, r.Request.Command, nouns, adjectives, resp, musicU, playlistU, rng)
 				}
-				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				logrus.Debug("GenresResponse", r, userSession)
 
 			case models.StatusChooseArtist:
@@ -170,6 +169,7 @@ func MainHandler(r marusia.Request,
 					userSession.GameState = models.NewGameState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				}
+				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 			case models.StatusGeneratedPlaylist:
 				userSession.GameState = models.NewGameState
 				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
