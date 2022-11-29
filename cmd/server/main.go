@@ -91,6 +91,7 @@ func main() {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.Use(gin.Logger())
 	config := cors.DefaultConfig()
   	config.AllowOrigins = []string{"https://user167920556-advymom2.wormhole.vk-apps.com", "https://user222246414-zukaqmh2.wormhole.vk-apps.com/"}
 	r.Any("/", gin.WrapF(mywh.HandleFunc))

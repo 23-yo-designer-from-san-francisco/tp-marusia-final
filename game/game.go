@@ -27,6 +27,9 @@ func StartGame(userSession *models.Session, resp marusia.Response) marusia.Respo
 	userSession.CurrentLevel = models.Two
 	userSession.NextLevelLoses = false
 	userSession.ArtistMatch = false
+	if userSession.GameMode == models.ArtistMode {
+		userSession.ArtistMatch = true
+	}
 	userSession.TitleMatch = false
 	userSession.TrackCounter += 1
 	resp.Text, resp.TTS = getRespTextFromLevel(userSession)
@@ -155,7 +158,7 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 			keyPhrase := utils.GeneratePlaylistName(nouns, adjectives)
 			logrus.Debug("Saving playlist in SelectGenre (any)")
 			for {
-				err = pU.SavePlaylist(utils.GeneratePlaylistName(nouns, adjectives), tracks)
+				err = pU.SavePlaylist(keyPhrase, tracks)
 				logrus.Debug("REPEAT")
 				if err == nil {
 					break
@@ -178,7 +181,7 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 			var keyPhrase string
 			for {
 				keyPhrase = utils.GeneratePlaylistName(nouns, adjectives)
-				err = pU.SavePlaylist(utils.GeneratePlaylistName(nouns, adjectives), tracks)
+				err = pU.SavePlaylist(keyPhrase, tracks)
 				logrus.Debug("REPEAT")
 				if err == nil {
 					break
