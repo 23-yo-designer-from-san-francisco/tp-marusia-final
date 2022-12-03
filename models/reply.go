@@ -2,10 +2,11 @@ package models
 
 import (
 	"fmt"
-	"github.com/seehuhn/mt19937"
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/seehuhn/mt19937"
 )
 
 //Phrase должны возвращать (string, string) -> resp.Text, resp.TTS
@@ -59,8 +60,8 @@ func LosePhrase(userSession *Session) (string, string) {
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
 	didntGuessPhrase := YouDidntGuessTexts[rng.Int63()%int64(len(YouDidntGuessTexts))]
-	str = fmt.Sprintf("%s %s %s %s %s", didntGuessPhrase, IWillSayTheAnswer,
-		SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
+	str = fmt.Sprintf("%s %s %s %s", didntGuessPhrase, IWillSayTheAnswer,
+		SaySongInfoString(userSession), GetScoreText(userSession))
 
 	str = CheckPlaylistFinished(userSession, str)
 
