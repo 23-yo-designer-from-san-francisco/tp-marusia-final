@@ -65,13 +65,15 @@ func MainHandler(r marusia.Request,
 			// попросили поменять артиста
 			userSession.GameState = models.ChooseArtistState
 			resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
+		} else if userSession.CompetitionMode && utils.ContainsAny(r.Request.Command, models.CompetitionRule) {
+			resp.Text, resp.TTS = models.CompetitionRulesPhrase()
 		} else {
 			switch userSession.GameState.GameStatus {
 			case models.StatusNewGame:
 				// логика после приветствия
 				logrus.Debug("NewGameRequest", r, userSession)
 				if strings.Contains(r.Request.Command, models.Competition) {
-					userSession.GameState = models.CompetitonRulesState
+					userSession.GameState = models.CompetitonState
 				} else if strings.Contains(r.Request.Command, models.LetsPlay) {
 					userSession.GameState = models.ChooseGenreState
 				} else if strings.Contains(r.Request.Command, models.KeyPhrase) {

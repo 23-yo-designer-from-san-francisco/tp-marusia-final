@@ -21,10 +21,10 @@ func GetScoreText(userSession *Session) string {
 	var score string
 	pointsStr := "баллов"
 	//От 10 до 19 оставляем баллов
-	if userSession.CurrentPoints / 10 == 1 {
-	} else if userSession.CurrentPoints % 10 == 1 {
+	if userSession.CurrentPoints/10 == 1 {
+	} else if userSession.CurrentPoints%10 == 1 {
 		pointsStr = "балл"
-	} else if userSession.CurrentPoints % 10 >= 2 && userSession.CurrentPoints % 10 <= 4 {
+	} else if userSession.CurrentPoints%10 >= 2 && userSession.CurrentPoints%10 <= 4 {
 		pointsStr = "балла"
 	}
 	if userSession.CompetitionMode {
@@ -55,14 +55,14 @@ func LosePhrase(userSession *Session) (string, string) {
 
 	str = CheckPlaylistFinished(userSession, str)
 
-	if userSession.Fails % 4 == 0 && userSession.Fails != 0 {
+	if userSession.Fails%4 == 0 && userSession.Fails != 0 {
 		str = fmt.Sprintf("%s %s", str, Notify)
 	}
 
 	return str, str
 }
 
-func addPoints (userSession *Session, divider int) (*Session) {
+func addPoints(userSession *Session, divider int) *Session {
 	switch userSession.CurrentLevel {
 	case Two:
 		userSession.CurrentPoints += GuessedAttempt1 / divider
@@ -75,10 +75,10 @@ func addPoints (userSession *Session, divider int) (*Session) {
 	return userSession
 }
 
-//Должна вызываться перед winPhrase and losePhrase
-func countPoints(userSession *Session) (*Session) {
-	fmt.Println("ArtistMatch: ",userSession.ArtistMatch)
-	fmt.Println("TitleMatch: ",userSession.TitleMatch)
+// Должна вызываться перед winPhrase and losePhrase
+func countPoints(userSession *Session) *Session {
+	fmt.Println("ArtistMatch: ", userSession.ArtistMatch)
+	fmt.Println("TitleMatch: ", userSession.TitleMatch)
 	//Ничего не угадали
 	if !userSession.ArtistMatch && !userSession.TitleMatch {
 		return userSession
@@ -97,7 +97,7 @@ func countPoints(userSession *Session) (*Session) {
 		addPoints(userSession, 2)
 		return userSession
 	}
-	
+
 	//Угадано оба
 	addPoints(userSession, 1)
 	return userSession
@@ -121,17 +121,17 @@ func StartGamePhrase() (string, string) {
 
 func ChooseGenrePhrase() (string, string) {
 	str := fmt.Sprintf("%s", ChooseGenre)
-	return str, str
+	return str, ChooseGenreTTS
 }
 
 func PlayingGamePhrase() (string, string) {
 	str := `Сейчас вы играете, попробуйте угадать песню, исполнителя или всё сразу. 
-		Если вы хотите поменять жанр скажите "Сменить Жанр". Чтобы сдаться, скажите "Сдаюсь"`
+		Если вы хотите поменять жанр, скажите "Сменить Жанр". Чтобы сдаться, скажите "Сдаюсь".`
 	return str, str
 }
 
 func CompetitionPhrase() (string, string) {
-	str := Competition
+	str := "Вы выбрали «Соревнование». Хотите прочитаю правила или сразу «Играем»?"
 	return str, str
 }
 
@@ -141,7 +141,7 @@ func AvailableGenresPhrase() (string, string) {
 }
 
 func ChooseArtistPhrase() (string, string) {
-	str := "Назовите Исполнителя, а я посмотрю знаю ли я о нём"
+	str := "Назовите Исполнителя, а я посмотрю, знаю ли я о нём."
 	return str, str
 }
 

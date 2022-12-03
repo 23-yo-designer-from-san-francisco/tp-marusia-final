@@ -95,7 +95,7 @@ func main() {
 	r.Use(gin.Recovery())
 	r.Use(gin.Logger())
 	r.POST("/", gin.WrapF(mywh.HandleFunc))
-	r.OPTIONS("/",gin.WrapF(mywh.HandleFunc))
+	r.OPTIONS("/", gin.WrapF(mywh.HandleFunc))
 	musicRouter := r.Group("/music")
 	playlistRouter := r.Group("/playlists")
 	router.MusicEndpoints(musicRouter, musicD)
