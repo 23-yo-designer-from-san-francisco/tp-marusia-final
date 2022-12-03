@@ -134,17 +134,17 @@ func StartGamePhrase() (string, string) {
 
 func ChooseGenrePhrase() (string, string) {
 	str := fmt.Sprintf("%s", ChooseGenre)
-	return str, str
+	return str, ChooseGenreTTS
 }
 
 func PlayingGamePhrase() (string, string) {
 	str := `Сейчас вы играете, попробуйте угадать песню, исполнителя или всё сразу. 
-		Если вы хотите поменять жанр скажите "Сменить Жанр". Чтобы сдаться, скажите "Сдаюсь"`
+		Если вы хотите поменять жанр, скажите "Сменить Жанр". Чтобы сдаться, скажите "Сдаюсь".`
 	return str, str
 }
 
 func CompetitionPhrase() (string, string) {
-	str := Competition
+	str := "Вы выбрали «Соревнование». Хотите прочитаю правила или сразу «Играем»?"
 	return str, str
 }
 
@@ -154,7 +154,7 @@ func AvailableGenresPhrase() (string, string) {
 }
 
 func ChooseArtistPhrase() (string, string) {
-	str := "Назовите Исполнителя, а я посмотрю знаю ли я о нём"
+	str := "Назовите Исполнителя, а я посмотрю, знаю ли я о нём."
 	return str, str
 }
 

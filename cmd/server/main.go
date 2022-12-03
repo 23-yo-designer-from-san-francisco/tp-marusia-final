@@ -93,14 +93,14 @@ func main() {
 
 	r := gin.Default()
 	r.POST("/", gin.WrapF(mywh.HandleFunc))
-	r.OPTIONS("/",gin.WrapF(mywh.HandleFunc))
+	r.OPTIONS("/", gin.WrapF(mywh.HandleFunc))
 
 	musicRouter := r.Group("/music")
 	musicRouter.Use(middleware.CORSMiddleware())
-	
+
 	playlistRouter := r.Group("/playlists")
 	playlistRouter.Use(middleware.CORSMiddleware())
-	
+
 	router.MusicEndpoints(musicRouter, musicD)
 	router.PlaylistEndpoints(playlistRouter, playlistD)
 
