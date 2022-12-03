@@ -76,6 +76,7 @@ func NewSession() *Session {
 		GameState:    NewGameState,
 		GameMode:     GenreMode,
 		CurrentPoints: 0,
+		IsHelloSaid: false,
 	}
 }
 
