@@ -30,6 +30,8 @@ func MainHandler(r marusia.Request,
 			return resp
 		}
 		resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
+		resp.Text = models.Hello + resp.Text
+		resp.TTS = models.Hello + resp.TTS
 		return resp
 	}
 

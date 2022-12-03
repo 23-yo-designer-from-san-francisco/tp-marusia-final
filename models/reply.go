@@ -43,6 +43,9 @@ func CheckPlaylistFinished(userSession *Session, str string) string {
 		if userSession.CompetitionMode {
 			str = fmt.Sprintf("%s %s %s", str, "Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase))
 		}
+	} else {
+		str += ToContinue
+		str += ToStop
 	}
 
 	return str
@@ -124,7 +127,7 @@ func WinPhrase(userSession *Session) (string, string) {
 
 // Начало Игры
 func StartGamePhrase() (string, string) {
-	str := fmt.Sprintf("%s %s %s %s %s", Hello, ToStart, ToStartCompetitive, ToStop, ToKeyPhrase)
+	str := fmt.Sprintf("%s %s %s %s", ToStart, ToStartCompetitive, ToStop, ToKeyPhrase)
 	return str, str
 }
 
