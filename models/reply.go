@@ -19,19 +19,26 @@ func SaySongInfoString(userSession *Session) string {
 
 func GetScoreText(userSession *Session) string {
 	var score string
+	pointsStr := "баллов"
+	//От 10 до 19 оставляем баллов
+	if userSession.CurrentPoints / 10 == 1 {
+	} else if userSession.CurrentPoints % 10 == 1 {
+		pointsStr = "балл"
+	} else if userSession.CurrentPoints % 10 >= 2 && userSession.CurrentPoints % 10 <= 4 {
+		pointsStr = "балла"
+	}
 	if userSession.CompetitionMode {
-		score = fmt.Sprintf("%s %g %s.", YourScore, userSession.CurrentPoints, "баллов")
+		score = fmt.Sprintf("%s %d %s.", YourScore, userSession.CurrentPoints, pointsStr)
 	}
 	return score
 }
 
-//Функция, меняющая state вне main. Хз, норм ли. По другому не придумал.
 func CheckPlaylistFinished(userSession *Session, str string) string {
 	if len(userSession.CurrentPlaylist) == 0 {
 		str = fmt.Sprintf("%s %s", str, PlaylistFinished)
 		userSession.GameState = PlaylistFinishedState
 		if userSession.CompetitionMode {
-			str = fmt.Sprintf("%s %s %s", str, "Ключевая фраза вашего плейлиста:", strings.ToTitle(userSession.KeyPhrase))
+			str = fmt.Sprintf("%s %s %s", str, "Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase))
 		}
 	}
 
@@ -48,21 +55,21 @@ func LosePhrase(userSession *Session) (string, string) {
 
 	str = CheckPlaylistFinished(userSession, str)
 
-	if userSession.Fails%4 == 0 && userSession.Fails != 0 {
+	if userSession.Fails % 4 == 0 && userSession.Fails != 0 {
 		str = fmt.Sprintf("%s %s", str, Notify)
 	}
 
 	return str, str
 }
 
-func addPoints (userSession *Session, multiplier float64) (*Session) {
+func addPoints (userSession *Session, divider int) (*Session) {
 	switch userSession.CurrentLevel {
 	case Two:
-		userSession.CurrentPoints += GuessedAttempt1 * multiplier
+		userSession.CurrentPoints += GuessedAttempt1 / divider
 	case Five:
-		userSession.CurrentPoints += GuessedAttempt2 * multiplier
+		userSession.CurrentPoints += GuessedAttempt2 / divider
 	case Ten:
-		userSession.CurrentPoints += GuessedAttempt3 * multiplier
+		userSession.CurrentPoints += GuessedAttempt3 / divider
 	}
 	fmt.Println("Points: ", userSession.CurrentPoints)
 	return userSession
@@ -78,7 +85,7 @@ func countPoints(userSession *Session) (*Session) {
 	}
 	//Угадали только название (Здесь не может быть в теории artistMode)
 	if userSession.TitleMatch && !userSession.ArtistMatch {
-		addPoints(userSession, 0.5)
+		addPoints(userSession, 2)
 		return userSession
 	}
 	//Угадали только исполнителя
@@ -87,7 +94,7 @@ func countPoints(userSession *Session) (*Session) {
 		if userSession.GameMode == ArtistMode {
 			return userSession
 		}
-		addPoints(userSession, 0.5)
+		addPoints(userSession, 2)
 		return userSession
 	}
 	
@@ -100,7 +107,7 @@ func WinPhrase(userSession *Session) (string, string) {
 	userSession = countPoints(userSession)
 	fmt.Println("After Func Points: ", userSession.CurrentPoints)
 	textString := fmt.Sprintf("%s %s %s %s", YouGuessText, GetScoreText(userSession), ToContinue, ToStop)
-	ttsString := fmt.Sprintf("%s %s %s %s", YouGuessTTS, SaySongInfoString(userSession), ToContinue, ToStop)
+	ttsString := fmt.Sprintf("%s %s %s %s", YouGuessTTS, GetScoreText(userSession), ToContinue, ToStop)
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
 	return textString, ttsString

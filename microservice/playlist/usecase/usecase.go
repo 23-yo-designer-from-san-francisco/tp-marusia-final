@@ -35,7 +35,7 @@ func (pU *PlaylistUsecase) GetPlaylist(title string) ([]models.VKTrack, error) {
 }
 
 func (pU *PlaylistUsecase) SavePlaylist(title string, tracks []models.VKTrack) error {
-	tracks, err := pU.playlistRepository.GetPlaylist(title)
+	_, err := pU.playlistRepository.GetPlaylist(title)
 	// Если плейлист ЕСТЬ, ошибки НЕТ
 	logrus.Warn("SavePlaylist err: ", err)
 	if err == nil {

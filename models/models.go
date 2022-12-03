@@ -52,7 +52,7 @@ type Track struct {
 
 type Session struct {
 	CurrentLevel    Duration
-	CurrentPoints   float64
+	CurrentPoints   int
 	CurrentTrack    VKTrack
 	MusicStarted    bool
 	NextLevelLoses  bool

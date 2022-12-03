@@ -27,6 +27,9 @@ func StartGame(userSession *models.Session, resp marusia.Response) marusia.Respo
 	userSession.CurrentLevel = models.Two
 	userSession.NextLevelLoses = false
 	userSession.ArtistMatch = false
+	if userSession.GameMode == models.ArtistMode {
+		userSession.ArtistMatch = true
+	}
 	userSession.TitleMatch = false
 	userSession.TrackCounter += 1
 	resp.Text, resp.TTS = getRespTextFromLevel(userSession)
@@ -56,11 +59,7 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 		audioVkId = userSession.CurrentTrack.Duration5
 	}
 
-	if userSession.ArtistMatch && userSession.GameMode != models.ArtistMode {
-		preWin = "Вы угадали исполнителя! А ^см`ожете^ название? "
-	} else if userSession.TitleMatch {
-		preWin = "Вы угадали название! А ^см`ожете^ исполнителя? "
-	} else if userSession.TrackCounter == 1 && userSession.CurrentLevel == models.Two {
+	if userSession.TrackCounter == 1 && userSession.CurrentLevel == models.Two {
 		if userSession.GameMode == models.ArtistMode {
 			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
 		} else {
@@ -159,7 +158,7 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 			keyPhrase := utils.GeneratePlaylistName(nouns, adjectives)
 			logrus.Debug("Saving playlist in SelectGenre (any)")
 			for {
-				err = pU.SavePlaylist(utils.GeneratePlaylistName(nouns, adjectives), tracks)
+				err = pU.SavePlaylist(keyPhrase, tracks)
 				logrus.Debug("REPEAT")
 				if err == nil {
 					break
@@ -182,7 +181,7 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 			var keyPhrase string
 			for {
 				keyPhrase = utils.GeneratePlaylistName(nouns, adjectives)
-				err = pU.SavePlaylist(utils.GeneratePlaylistName(nouns, adjectives), tracks)
+				err = pU.SavePlaylist(keyPhrase, tracks)
 				logrus.Debug("REPEAT")
 				if err == nil {
 					break
