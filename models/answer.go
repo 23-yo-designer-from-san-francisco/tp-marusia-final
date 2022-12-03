@@ -70,14 +70,23 @@ const (
 
 // Для угадываний
 const (
-	DontGuess    = "Эх, вы не ^уга`дали^."
-	YouGuessText = "Вы молодец! Угадали!"
-	YouGuessTTS  = "Вы молодец! ^Уга`дали^! <speaker audio=marusia-sounds/game-win-1>"
-	YourScore    = "Ваш счет"
+	YourScore = "Ваш счет"
 )
+
+var YouDidntGuessTexts = []string{
+	"Эх, вы не угадали.",
+	"Неправильно.",
+	"Повезёт в другой раз.",
+}
+
+var YouGuessedTexts = []string{
+	"Вы молодец! Угадали!",
+	"Абсолютно верно!",
+	"Конечно!",
+}
 
 // Для ответов по песням
 const (
 	IWillSayTheAnswer = "Сейчас скажу ответ."
-	ThatIs            = "Это же:"
+	ThatIs            = "Это:"
 )
