@@ -51,7 +51,6 @@ type Track struct {
 }
 
 type Session struct {
-	IsHelloSaid     bool
 	CurrentLevel    Duration
 	CurrentPoints   int
 	CurrentTrack    VKTrack
@@ -76,7 +75,6 @@ func NewSession() *Session {
 		GameState:    NewGameState,
 		GameMode:     GenreMode,
 		CurrentPoints: 0,
-		IsHelloSaid: false,
 	}
 }
 

@@ -30,6 +30,8 @@ func MainHandler(r marusia.Request,
 			return resp
 		}
 		resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
+		resp.Text = models.Hello + resp.Text
+		resp.TTS = models.Hello + resp.TTS
 		return resp
 	}
 
@@ -78,11 +80,6 @@ func MainHandler(r marusia.Request,
 					userSession.GameState = models.KeyPhrasePlaylistState
 				}
 				resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
-				if !userSession.IsHelloSaid {
-					resp.Text = models.Hello + resp.Text
-					resp.TTS = models.Hello + resp.TTS
-					userSession.IsHelloSaid = true
-				}
 				logrus.Debug("NewGameResponse", r, userSession)
 			case models.StatusChoosingGenre, models.StatusListingGenres:
 				// логика после предложения выбрать жанр
