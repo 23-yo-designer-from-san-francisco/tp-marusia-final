@@ -40,6 +40,9 @@ func CheckPlaylistFinished(userSession *Session, str string) string {
 		if userSession.CompetitionMode {
 			str = fmt.Sprintf("%s %s %s", str, "Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase))
 		}
+	} else {
+		str += ToContinue
+		str += ToStop
 	}
 
 	return str
@@ -50,8 +53,8 @@ func LosePhrase(userSession *Session) (string, string) {
 	var str string
 	userSession = countPoints(userSession)
 	userSession.Fails += 1
-	str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
-		SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
+	str = fmt.Sprintf("%s %s %s %s", DontGuess, IWillSayTheAnswer,
+		SaySongInfoString(userSession), GetScoreText(userSession))
 
 	str = CheckPlaylistFinished(userSession, str)
 
@@ -106,8 +109,8 @@ func countPoints(userSession *Session) (*Session) {
 func WinPhrase(userSession *Session) (string, string) {
 	userSession = countPoints(userSession)
 	fmt.Println("After Func Points: ", userSession.CurrentPoints)
-	textString := fmt.Sprintf("%s %s %s %s", YouGuessText, GetScoreText(userSession), ToContinue, ToStop)
-	ttsString := fmt.Sprintf("%s %s %s %s", YouGuessTTS, GetScoreText(userSession), ToContinue, ToStop)
+	textString := fmt.Sprintf("%s %s", YouGuessText, GetScoreText(userSession))
+	ttsString := fmt.Sprintf("%s %s", YouGuessTTS, GetScoreText(userSession))
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
 	return textString, ttsString
