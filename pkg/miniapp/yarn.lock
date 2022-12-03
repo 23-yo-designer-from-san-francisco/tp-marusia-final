@@ -1934,10 +1934,10 @@
   resolved "https://registry.yarnpkg.com/@vkontakte/vk-bridge/-/vk-bridge-2.7.1.tgz#2b56534858efa1823a6b9250f4f1aea4709bb971"
   integrity sha512-OD2xCvHqkQbwNw2v2lQhOav4EUHRMAhAqSr+jlMrldy7DDvR11Bg1Arf/U5y+JcKcrgt4CpojujMIMxwrm9Biw==
 
-"@vkontakte/vk-miniapps-deploy@0.0.25":
-  version "0.0.25"
-  resolved "https://registry.yarnpkg.com/@vkontakte/vk-miniapps-deploy/-/vk-miniapps-deploy-0.0.25.tgz#7d783c1d8f653f9e4c35ee5efb3e222ac4b0418a"
-  integrity sha512-5rNg/pNzBgtUDe7vsQsSsC7uRjQfiDzoZTSZYQGz8FbZlXn8aiwVg5XtzTBY2d9JU0y9nN5C6IrIoTk27VoJ+g==
+"@vkontakte/vk-miniapps-deploy@^0.0.26":
+  version "0.0.26"
+  resolved "https://registry.yarnpkg.com/@vkontakte/vk-miniapps-deploy/-/vk-miniapps-deploy-0.0.26.tgz#91f519df62ee3f11923c859a2e217beee200bde9"
+  integrity sha512-80n5Mq/uYgg2X5W3bv2yup6euq4UTuWsxAnlnjPKEnUlAgc5qNiVHggaYWWtycl0XsLgolWAwASliL0iPqompg==
   dependencies:
     async "^3.2.0"
     chalk "^3.0.0"

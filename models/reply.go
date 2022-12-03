@@ -2,7 +2,10 @@ package models
 
 import (
 	"fmt"
+	"github.com/seehuhn/mt19937"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 //Phrase должны возвращать (string, string) -> resp.Text, resp.TTS
@@ -40,6 +43,9 @@ func CheckPlaylistFinished(userSession *Session, str string) string {
 		if userSession.CompetitionMode {
 			str = fmt.Sprintf("%s %s %s", str, "Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase))
 		}
+	} else {
+		str += ToContinue
+		str += ToStop
 	}
 
 	return str
@@ -50,7 +56,10 @@ func LosePhrase(userSession *Session) (string, string) {
 	var str string
 	userSession = countPoints(userSession)
 	userSession.Fails += 1
-	str = fmt.Sprintf("%s %s %s %s %s", DontGuess, IWillSayTheAnswer,
+	rng := rand.New(mt19937.New())
+	rng.Seed(time.Now().UnixNano())
+	didntGuessPhrase := YouDidntGuessTexts[rng.Int63()%int64(len(YouDidntGuessTexts))]
+	str = fmt.Sprintf("%s %s %s %s %s", didntGuessPhrase, IWillSayTheAnswer,
 		SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
 
 	str = CheckPlaylistFinished(userSession, str)
@@ -75,7 +84,7 @@ func addPoints(userSession *Session, divider int) *Session {
 	return userSession
 }
 
-// Должна вызываться перед winPhrase and losePhrase
+//Должна вызываться перед winPhrase and losePhrase
 func countPoints(userSession *Session) *Session {
 	fmt.Println("ArtistMatch: ", userSession.ArtistMatch)
 	fmt.Println("TitleMatch: ", userSession.TitleMatch)
@@ -104,10 +113,13 @@ func countPoints(userSession *Session) *Session {
 }
 
 func WinPhrase(userSession *Session) (string, string) {
+	rng := rand.New(mt19937.New())
+	rng.Seed(time.Now().UnixNano())
+	guessedPhrase := YouGuessedTexts[rng.Int63()%int64(len(YouGuessedTexts))]
 	userSession = countPoints(userSession)
 	fmt.Println("After Func Points: ", userSession.CurrentPoints)
-	textString := fmt.Sprintf("%s %s %s %s", YouGuessText, GetScoreText(userSession), ToContinue, ToStop)
-	ttsString := fmt.Sprintf("%s %s %s %s", YouGuessTTS, GetScoreText(userSession), ToContinue, ToStop)
+	textString := fmt.Sprintf("%s %s %s %s", guessedPhrase, GetScoreText(userSession), ToContinue, ToStop)
+	ttsString := textString
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
 	return textString, ttsString
@@ -115,7 +127,7 @@ func WinPhrase(userSession *Session) (string, string) {
 
 // Начало Игры
 func StartGamePhrase() (string, string) {
-	str := fmt.Sprintf("%s %s %s %s %s", Hello, ToStart, ToStartCompetitive, ToStop, ToKeyPhrase)
+	str := fmt.Sprintf("%s %s %s %s", ToStart, ToStartCompetitive, ToStop, ToKeyPhrase)
 	return str, str
 }
 

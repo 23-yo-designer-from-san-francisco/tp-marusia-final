@@ -91,16 +91,17 @@ func main() {
 		return game.MainHandler(r, sessionU, musicU, playlistU, rng, adjectives, nouns)
 	})
 
-	r := gin.New()
-	r.Use(gin.Recovery())
-	r.Use(gin.Logger())
+	r := gin.Default()
 	r.POST("/", gin.WrapF(mywh.HandleFunc))
 	r.OPTIONS("/", gin.WrapF(mywh.HandleFunc))
+
 	musicRouter := r.Group("/music")
-	playlistRouter := r.Group("/playlists")
-	router.MusicEndpoints(musicRouter, musicD)
 	musicRouter.Use(middleware.CORSMiddleware())
+
+	playlistRouter := r.Group("/playlists")
 	playlistRouter.Use(middleware.CORSMiddleware())
+
+	router.MusicEndpoints(musicRouter, musicD)
 	router.PlaylistEndpoints(playlistRouter, playlistD)
 
 	err = r.Run(":8080")
