@@ -31,3 +31,6 @@ cmd/main
 .vscode
 *db.sql
 *node_modules
+pkg/miniapp/build
+pkg/miniapp/build.zip
+
