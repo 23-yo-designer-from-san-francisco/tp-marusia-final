@@ -2,7 +2,10 @@ package models
 
 import (
 	"fmt"
+	"github.com/seehuhn/mt19937"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 //Phrase должны возвращать (string, string) -> resp.Text, resp.TTS
@@ -21,10 +24,10 @@ func GetScoreText(userSession *Session) string {
 	var score string
 	pointsStr := "баллов"
 	//От 10 до 19 оставляем баллов
-	if userSession.CurrentPoints / 10 == 1 {
-	} else if userSession.CurrentPoints % 10 == 1 {
+	if userSession.CurrentPoints/10 == 1 {
+	} else if userSession.CurrentPoints%10 == 1 {
 		pointsStr = "балл"
-	} else if userSession.CurrentPoints % 10 >= 2 && userSession.CurrentPoints % 10 <= 4 {
+	} else if userSession.CurrentPoints%10 >= 2 && userSession.CurrentPoints%10 <= 4 {
 		pointsStr = "балла"
 	}
 	if userSession.CompetitionMode {
@@ -53,19 +56,22 @@ func LosePhrase(userSession *Session) (string, string) {
 	var str string
 	userSession = countPoints(userSession)
 	userSession.Fails += 1
-	str = fmt.Sprintf("%s %s %s %s", DontGuess, IWillSayTheAnswer,
-		SaySongInfoString(userSession), GetScoreText(userSession))
+	rng := rand.New(mt19937.New())
+	rng.Seed(time.Now().UnixNano())
+	didntGuessPhrase := YouDidntGuessTexts[rng.Int63()%int64(len(YouDidntGuessTexts))]
+	str = fmt.Sprintf("%s %s %s %s %s", didntGuessPhrase, IWillSayTheAnswer,
+		SaySongInfoString(userSession), GetScoreText(userSession), ToContinue)
 
 	str = CheckPlaylistFinished(userSession, str)
 
-	if userSession.Fails % 4 == 0 && userSession.Fails != 0 {
+	if userSession.Fails%4 == 0 && userSession.Fails != 0 {
 		str = fmt.Sprintf("%s %s", str, Notify)
 	}
 
 	return str, str
 }
 
-func addPoints (userSession *Session, divider int) (*Session) {
+func addPoints(userSession *Session, divider int) *Session {
 	switch userSession.CurrentLevel {
 	case Two:
 		userSession.CurrentPoints += GuessedAttempt1 / divider
@@ -79,9 +85,9 @@ func addPoints (userSession *Session, divider int) (*Session) {
 }
 
 //Должна вызываться перед winPhrase and losePhrase
-func countPoints(userSession *Session) (*Session) {
-	fmt.Println("ArtistMatch: ",userSession.ArtistMatch)
-	fmt.Println("TitleMatch: ",userSession.TitleMatch)
+func countPoints(userSession *Session) *Session {
+	fmt.Println("ArtistMatch: ", userSession.ArtistMatch)
+	fmt.Println("TitleMatch: ", userSession.TitleMatch)
 	//Ничего не угадали
 	if !userSession.ArtistMatch && !userSession.TitleMatch {
 		return userSession
@@ -100,17 +106,20 @@ func countPoints(userSession *Session) (*Session) {
 		addPoints(userSession, 2)
 		return userSession
 	}
-	
+
 	//Угадано оба
 	addPoints(userSession, 1)
 	return userSession
 }
 
 func WinPhrase(userSession *Session) (string, string) {
+	rng := rand.New(mt19937.New())
+	rng.Seed(time.Now().UnixNano())
+	guessedPhrase := YouGuessedTexts[rng.Int63()%int64(len(YouGuessedTexts))]
 	userSession = countPoints(userSession)
 	fmt.Println("After Func Points: ", userSession.CurrentPoints)
-	textString := fmt.Sprintf("%s %s", YouGuessText, GetScoreText(userSession))
-	ttsString := fmt.Sprintf("%s %s", YouGuessTTS, GetScoreText(userSession))
+	textString := fmt.Sprintf("%s %s %s %s", guessedPhrase, GetScoreText(userSession), ToContinue, ToStop)
+	ttsString := textString
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
 	return textString, ttsString
