@@ -115,7 +115,7 @@ func WinPhrase(userSession *Session) (string, string) {
 
 // Начало Игры
 func StartGamePhrase() (string, string) {
-	str := fmt.Sprintf("%s %s %s %s %s", Hello, ToStart, ToStartCompetitive, ToStop, ToKeyPhrase)
+	str := fmt.Sprintf("%s %s %s %s", ToStart, ToStartCompetitive, ToStop, ToKeyPhrase)
 	return str, str
 }
 

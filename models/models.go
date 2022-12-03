@@ -51,6 +51,7 @@ type Track struct {
 }
 
 type Session struct {
+	IsHelloSaid     bool
 	CurrentLevel    Duration
 	CurrentPoints   int
 	CurrentTrack    VKTrack
