@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"guessTheSongMarusia/game"
+	"guessTheSongMarusia/middleware"
 	"guessTheSongMarusia/router"
 	"guessTheSongMarusia/utils"
 	"math/rand"
@@ -10,7 +11,6 @@ import (
 	"time"
 
 	log "guessTheSongMarusia/pkg/logger"
-	"github.com/gin-contrib/cors"
 
 	"github.com/seehuhn/mt19937"
 	"github.com/sirupsen/logrus"
@@ -67,6 +67,8 @@ func main() {
 	adjectives := utils.ReadCsvFile("../../config/adjectives.txt")
 	nouns := utils.ReadCsvFile("../../config/nouns.txt")
 
+	middleware := middleware.NewMiddleware()
+
 	musicR := musicRepo.NewMusicRepository(postgresDB)
 	musicU := musicUsecase.NewMusicUsecase(musicR)
 	musicD := musicDelivery.NewMusicDelivery(musicU)
@@ -92,14 +94,13 @@ func main() {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(gin.Logger())
-	config := cors.DefaultConfig()
-  	config.AllowOrigins = []string{"https://user167920556-advymom2.wormhole.vk-apps.com", "https://user222246414-zukaqmh2.wormhole.vk-apps.com"}
-	r.Any("/", gin.WrapF(mywh.HandleFunc))
+	r.POST("/", gin.WrapF(mywh.HandleFunc))
+	r.OPTIONS("/",gin.WrapF(mywh.HandleFunc))
 	musicRouter := r.Group("/music")
-	musicRouter.Use(cors.New(config))
 	playlistRouter := r.Group("/playlists")
-	playlistRouter.Use(cors.New(config))
 	router.MusicEndpoints(musicRouter, musicD)
+	musicRouter.Use(middleware.CORSMiddleware())
+	playlistRouter.Use(middleware.CORSMiddleware())
 	router.PlaylistEndpoints(playlistRouter, playlistD)
 
 	err = r.Run(":8080")
