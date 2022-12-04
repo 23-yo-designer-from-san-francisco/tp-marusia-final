@@ -12,7 +12,7 @@ import (
 // https://sqlformat.org/
 const (
 	insertMusicQueryV2 = `
-		INSERT INTO music (title, artist, duration_two_url, duration_three_url, duration_five_url, duration_fifteen_url, human_titles)
+		INSERT INTO music (title, artist, duration_three_url, duration_five_url, duration_eight_url, duration_thirty_url, human_titles)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id;
 	`
@@ -32,10 +32,10 @@ const (
 		m.id,
 		m.title,
 		m.artist,
-		m.duration_two_url,
 		m.duration_three_url,
 		m.duration_five_url,
-		m.duration_fifteen_url,
+		m.duration_eight_url,
+		m.duration_thirty_url,
 		m.human_titles from music as m
 		join artist_music as am on m.id = am.music_id 
 		join artist as a on a.id = am.artist_id
@@ -47,10 +47,10 @@ const (
     	m.id,
 		m.title,
 		m.artist,
-		m.duration_two_url,
 		m.duration_three_url,
 		m.duration_five_url,
-		m.duration_fifteen_url,
+		m.duration_eight_url,
+		m.duration_thirty_url,
 		m.human_titles
 		from music as m 
 			join genre_music as gm on m.id = gm.music_id 
@@ -65,10 +65,10 @@ const (
 				m.id,
 				m.title,
 				m.artist,
-				m.duration_two_url,
 				m.duration_three_url,
 				m.duration_five_url,
-				m.duration_fifteen_url,
+				m.duration_eight_url,
+				m.duration_thirty_url,
 				m.human_titles
 		FROM music AS m;
 	`
@@ -77,10 +77,10 @@ const (
 				m.id,
 				m.title,
 				m.artist,
-				m.duration_two_url,
 				m.duration_three_url,
 				m.duration_five_url,
-				m.duration_fifteen_url,
+				m.duration_eight_url,
+				m.duration_thirty_url,
 				m.human_titles
 		FROM music AS m
 		ORDER BY random()
@@ -91,10 +91,10 @@ const (
     	m.id,
 		m.title,
 		m.artist,
-		m.duration_two_url,
 		m.duration_three_url,
 		m.duration_five_url,
-		m.duration_fifteen_url,
+		m.duration_eight_url,
+		m.duration_thirty_url,
 		m.human_titles
 		from music as m 
 			join genre_music as gm on m.id = gm.music_id 
@@ -108,10 +108,10 @@ const (
     	m.id,
 		m.title,
 		m.artist,
-		m.duration_two_url,
 		m.duration_three_url,
 		m.duration_five_url,
-		m.duration_fifteen_url,
+		m.duration_eight_url,
+		m.duration_thirty_url,
 		m.human_titles
 		from music as m 
 			join artist_music as am on m.id = am.music_id 
@@ -186,10 +186,10 @@ func (mR *MusicRepository) CreateTrack(track *models.VKTrack) error {
 	err = tx.QueryRowx(insertMusicQueryV2,
 		&track.Title,
 		&track.Artist,
-		&track.Duration2,
 		&track.Duration3,
 		&track.Duration5,
-		&track.Duration15,
+		&track.Duration8,
+		&track.Duration30,
 		&track.HumanTitles).Scan(&musicID)
 
 	if err != nil {

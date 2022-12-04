@@ -73,11 +73,11 @@ func LosePhrase(userSession *Session) (string, string) {
 
 func addPoints(userSession *Session, divider int) *Session {
 	switch userSession.CurrentLevel {
-	case Two:
+	case Three:
 		userSession.CurrentPoints += GuessedAttempt1 / divider
 	case Five:
 		userSession.CurrentPoints += GuessedAttempt2 / divider
-	case Ten:
+	case Eight:
 		userSession.CurrentPoints += GuessedAttempt3 / divider
 	}
 	fmt.Println("Points: ", userSession.CurrentPoints)

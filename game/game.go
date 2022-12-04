@@ -24,7 +24,7 @@ func StartGame(userSession *models.Session, resp marusia.Response) marusia.Respo
 	fmt.Println("Selected track Artists", userSession.CurrentTrack.ArtistsWithHumanArtists)
 	userSession.GameState = models.PlayingState
 	userSession.MusicStarted = true
-	userSession.CurrentLevel = models.Two
+	userSession.CurrentLevel = models.Three
 	userSession.NextLevelLoses = false
 	userSession.ArtistMatch = false
 	if userSession.GameMode == models.ArtistMode {
@@ -48,18 +48,18 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 	var s, text, tts, preWin, audioVkId string
 	fmt.Println("Секунды", userSession.CurrentLevel)
 	switch userSession.CurrentLevel {
-	case models.Two:
-		s = "две секунды"
-		audioVkId = userSession.CurrentTrack.Duration2
-	case models.Five:
-		s = "следующие три секунды"
+	case models.Three:
+		s = "три секунды"
 		audioVkId = userSession.CurrentTrack.Duration3
-	case models.Ten:
+	case models.Five:
 		s = "следующие пять секунд"
 		audioVkId = userSession.CurrentTrack.Duration5
+	case models.Eight:
+		s = "следующие восемь секунд"
+		audioVkId = userSession.CurrentTrack.Duration8
 	}
 
-	if userSession.TrackCounter == 1 && userSession.CurrentLevel == models.Two {
+	if userSession.TrackCounter == 1 && userSession.CurrentLevel == models.Three {
 		if userSession.GameMode == models.ArtistMode {
 			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
 		} else {
@@ -80,10 +80,10 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 func WrongAnswerPlay(userSession *models.Session, resp marusia.Response) marusia.Response {
 	if userSession.MusicStarted && !userSession.NextLevelLoses {
 		// Тут надо инкремент, а не хардкод
-		if userSession.CurrentLevel == models.Two {
+		if userSession.CurrentLevel == models.Three {
 			userSession.CurrentLevel = models.Five
 		} else if userSession.CurrentLevel == models.Five {
-			userSession.CurrentLevel = models.Ten
+			userSession.CurrentLevel = models.Eight
 			userSession.NextLevelLoses = true
 		}
 		userSession.MusicStarted = true

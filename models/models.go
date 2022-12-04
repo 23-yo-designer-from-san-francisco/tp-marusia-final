@@ -11,9 +11,10 @@ import (
 type Duration int64
 
 const (
-	Two  Duration = 2
-	Five Duration = 5
-	Ten  Duration = 10
+	Three  Duration = 3
+	Five   Duration = 5
+	Eight  Duration = 8
+	Thirty Duration = 30
 )
 
 const (
@@ -87,10 +88,10 @@ type VKTrack struct {
 	ID                      int                 `json:"id,omitempty" db:"id"`
 	Title                   string              `json:"title,omitempty" db:"title"`
 	Artist                  string              `json:"artist,omitempty" db:"artist"`
-	Duration2               string              `json:"duration_2,omitempty" db:"duration_two_url"`
 	Duration3               string              `json:"duration_3,omitempty" db:"duration_three_url"`
 	Duration5               string              `json:"duration_5,omitempty" db:"duration_five_url"`
-	Duration15              string              `json:"duration_15,omitempty" db:"duration_fifteen_url"`
+	Duration8               string              `json:"duration_8,omitempty" db:"duration_eight_url"`
+	Duration30              string              `json:"duration_30,omitempty" db:"duration_thirty_url"`
 	ArtistsWithHumanArtists map[string][]string `json:"human_artists"`
 	HumanTitles             pq.StringArray      `json:"human_titles" db:"human_titles"`
 }
