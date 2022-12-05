@@ -122,6 +122,7 @@ func WinPhrase(userSession *Session) (string, string) {
 	ttsString := textString
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
+	ttsString = fmt.Sprintf("%s <speaker audio_vk_id=%s >", ttsString, userSession.CurrentTrack.Duration30)
 	return textString, ttsString
 }
 

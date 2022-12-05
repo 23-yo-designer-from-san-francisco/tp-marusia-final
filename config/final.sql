@@ -8,14 +8,14 @@ insert into genre (genre) values ('Зарубежные песни');
 update genre set human_genres = array_prepend(lower(genre), human_genres);
 
 insert into genre_music (music_id, genre_id)
-select m.id, 1 as my_genre_id from music as m 
+select m.id, (select id from genre where genre = 'Рэп') as my_genre_id from music as m 
 join artist_music as am on am.music_id = m.id
 join artist as a on a.id = am.artist_id
 where a.artist_name = 'Post Malone' or
 a.artist_name = 'Eminem';
 
 insert into genre_music (music_id, genre_id)
-select m.id, 2 as my_genre_id from music as m 
+select m.id, (select id from genre where genre = 'Рок') as my_genre_id from music as m 
 join artist_music as am on am.music_id = m.id
 join artist as a on a.id = am.artist_id
 where a.artist_name = 'Green Day' or
@@ -26,7 +26,7 @@ a.artist_name = 'Би-2' or
 a.artist_name = 'Кино';
 
 insert into genre_music (music_id, genre_id)
-select m.id, 3 as my_genre_id from music as m 
+select m.id, (select id from genre where genre = 'Поп') as my_genre_id from music as m 
 join artist_music as am on am.music_id = m.id
 join artist as a on a.id = am.artist_id
 where a.artist_name = 'ЕГОР КРИД' or
@@ -42,14 +42,14 @@ a.artist_name = 'Ed Sheeran' or
 a.artist_name = 'Руки Вверх';
 
 insert into genre_music (music_id, genre_id)
-select m.id, 4 as my_genre_id from music as m 
+select m.id, (select id from genre where genre = 'Альтернатива') as my_genre_id from music as m 
 join artist_music as am on am.music_id = m.id
 join artist as a on a.id = am.artist_id
 where a.artist_name = 'Imagine Dragons' or
 a.artist_name = 'twenty one pilots';
 
 insert into genre_music (music_id, genre_id)
-select m.id, 5 as my_genre_id from music as m 
+select m.id, (select id from genre where genre = 'Русские песни') as my_genre_id from music as m 
 join artist_music as am on am.music_id = m.id
 join artist as a on a.id = am.artist_id
 where a.artist_name = 'ЕГОР КРИД' or
@@ -63,7 +63,7 @@ a.artist_name = 'Кино' or
 a.artist_name = 'Звери';
 
 insert into genre_music (music_id, genre_id)
-select m.id, 6 as my_genre_id from music as m 
+select m.id, (select id from genre where genre = 'Зарубежные песни') as my_genre_id from music as m 
 join artist_music as am on am.music_id = m.id
 join artist as a on a.id = am.artist_id
 where a.artist_name = 'Post Malone' or
