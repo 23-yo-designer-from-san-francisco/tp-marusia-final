@@ -198,11 +198,12 @@ func MainHandler(r marusia.Request,
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 					return
 				}
+				userSession.CurrentPoints = 0
 				userSession.CurrentGenre = r.Request.Command
 				userSession.KeyPhrase = r.Request.Command
 				userSession.CurrentPlaylist = playlist
 				userSession.CompetitionMode = true
-				str := fmt.Sprintf("%s%d ", "Я нашла этот плейлист. Количество треков: ", len(playlist))
+				str := fmt.Sprintf("%s.%d ", "Я нашла этот плейлист. Количество треков: ", len(playlist))
 				resp = StartGame(userSession, resp)
 				resp.Text, resp.TTS = str+resp.Text, str+resp.TTS
 			default:

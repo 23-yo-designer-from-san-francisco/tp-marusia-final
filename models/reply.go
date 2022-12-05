@@ -60,8 +60,8 @@ func LosePhrase(userSession *Session) (string, string) {
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
 	didntGuessPhrase := YouDidntGuessTexts[rng.Int63()%int64(len(YouDidntGuessTexts))]
-	str = fmt.Sprintf("%s %s %s %s", didntGuessPhrase, IWillSayTheAnswer,
-		SaySongInfoString(userSession), GetScoreText(userSession))
+	str = fmt.Sprintf("%s %s %s <speaker audio_vk_id=%s > %s", didntGuessPhrase, IWillSayTheAnswer,
+		SaySongInfoString(userSession), userSession.CurrentTrack.Duration5, GetScoreText(userSession))
 
 	str = CheckPlaylistFinished(userSession, str)
 
@@ -123,7 +123,8 @@ func WinPhrase(userSession *Session) (string, string) {
 	ttsString := textString
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
-	ttsString = fmt.Sprintf("%s <speaker audio_vk_id=%s >", ttsString, userSession.CurrentTrack.Duration30)
+	listenPhrase := LetsListenTrack[rng.Int63()%int64(len(LetsListenTrack))]
+	ttsString = fmt.Sprintf("%s %s <speaker audio_vk_id=%s >", ttsString, listenPhrase, userSession.CurrentTrack.Duration30)
 	return textString, ttsString
 }
 

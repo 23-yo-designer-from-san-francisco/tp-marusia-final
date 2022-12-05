@@ -204,6 +204,7 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 	}
 
 	userSession.TrackCounter = 0
+	userSession.CurrentPoints = 0
 	userSession.CurrentGenre = genre
 	userSession.GameMode = models.GenreMode
 	userSession.CurrentPlaylist = tracks
@@ -255,6 +256,7 @@ func SelectArtist(userSession *models.Session, command string, nouns []string, a
 	}
 
 	userSession.TrackCounter = 0
+	userSession.CurrentPoints = 0
 	userSession.CurrentGenre = artist
 	userSession.GameMode = models.ArtistMode
 	userSession.ArtistMatch = true
