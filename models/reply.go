@@ -60,11 +60,14 @@ func LosePhrase(userSession *Session) (string, string) {
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
 	didntGuessPhrase := YouDidntGuessTexts[rng.Int63()%int64(len(YouDidntGuessTexts))]
-	str = fmt.Sprintf("%s %s %s <speaker audio_vk_id=%s > %s", didntGuessPhrase, IWillSayTheAnswer,
+	str = fmt.Sprintf("%s %s %s %s", didntGuessPhrase, IWillSayTheAnswer,
+		SaySongInfoString(userSession), GetScoreText(userSession))
+	
+	ttsString := fmt.Sprintf("%s %s %s <speaker audio_vk_id=%s > %s", didntGuessPhrase, IWillSayTheAnswer,
 		SaySongInfoString(userSession), userSession.CurrentTrack.Duration5, GetScoreText(userSession))
 
 	str = CheckPlaylistFinished(userSession, str)
-
+	ttsString = CheckPlaylistFinished(userSession, ttsString)
 	if userSession.Fails%4 == 0 && userSession.Fails != 0 {
 		str = fmt.Sprintf("%s %s", str, Notify)
 	}
