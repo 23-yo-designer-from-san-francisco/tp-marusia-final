@@ -72,7 +72,7 @@ func LosePhrase(userSession *Session) (string, string) {
 		str = fmt.Sprintf("%s %s", str, Notify)
 	}
 
-	return str, str
+	return str, ttsString
 }
 
 func addPoints(userSession *Session, divider int) *Session {
