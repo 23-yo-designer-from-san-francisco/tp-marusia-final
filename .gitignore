@@ -31,6 +31,8 @@ cmd/main
 .vscode
 *db.sql
 *node_modules
+*music.json
+db.backup
 pkg/miniapp/build
 pkg/miniapp/build.zip
 

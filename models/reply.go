@@ -74,11 +74,11 @@ func LosePhrase(userSession *Session) (string, string) {
 
 func addPoints(userSession *Session, divider int) *Session {
 	switch userSession.CurrentLevel {
-	case Two:
+	case Three:
 		userSession.CurrentPoints += GuessedAttempt1 / divider
 	case Five:
 		userSession.CurrentPoints += GuessedAttempt2 / divider
-	case Ten:
+	case Eight:
 		userSession.CurrentPoints += GuessedAttempt3 / divider
 	}
 	fmt.Println("Points: ", userSession.CurrentPoints)
@@ -123,6 +123,7 @@ func WinPhrase(userSession *Session) (string, string) {
 	ttsString := textString
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
+	ttsString = fmt.Sprintf("%s <speaker audio_vk_id=%s >", ttsString, userSession.CurrentTrack.Duration30)
 	return textString, ttsString
 }
 
