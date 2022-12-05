@@ -119,7 +119,7 @@ func WinPhrase(userSession *Session) (string, string) {
 	guessedPhrase := YouGuessedTexts[rng.Int63()%int64(len(YouGuessedTexts))]
 	userSession = countPoints(userSession)
 	fmt.Println("After Func Points: ", userSession.CurrentPoints)
-	textString := fmt.Sprintf("%s %s %s %s", guessedPhrase, GetScoreText(userSession), ToContinue, ToStop)
+	textString := fmt.Sprintf("%s %s", guessedPhrase, GetScoreText(userSession))
 	ttsString := textString
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
