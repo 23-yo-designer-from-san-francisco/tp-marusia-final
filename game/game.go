@@ -90,7 +90,7 @@ func WrongAnswerPlay(userSession *models.Session, resp marusia.Response) marusia
 		resp.Text, resp.TTS = getRespTextFromLevel(userSession)
 		return resp
 	}
-	resultString := fmt.Sprintf("%s — %s %s. ", models.IWillSayTheAnswer, models.SaySongInfoString(userSession), models.ToContinue)
+	resultString := fmt.Sprintf("%s %s. ", models.SaySongInfoString(userSession), models.ToContinue)
 	resp.Text, resp.TTS = resultString, resultString
 	return resp
 }

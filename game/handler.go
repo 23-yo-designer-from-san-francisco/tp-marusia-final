@@ -202,7 +202,7 @@ func MainHandler(r marusia.Request,
 				userSession.KeyPhrase = r.Request.Command
 				userSession.CurrentPlaylist = playlist
 				userSession.CompetitionMode = true
-				str := fmt.Sprintf("%s%d ", "Я нашла этот плейлист. Количество треков: ", len(playlist))
+				str := fmt.Sprintf("%s%d. ", "Я нашла этот плейлист. Количество треков: ", len(playlist))
 				resp = StartGame(userSession, resp)
 				resp.Text, resp.TTS = str+resp.Text, str+resp.TTS
 			default:

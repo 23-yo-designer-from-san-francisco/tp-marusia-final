@@ -191,20 +191,20 @@ def find_and_output_chorus(input_file, output_file, clip_length=15):
         # sf.write(output_file, chorus_wave_data, sr)
         #librosa.output.write_wav(output_file, chorus_wave_data, sr)
         subprocess.call([
-            'ffmpeg', '-ss', str(start), '-i', input_file, '-map', '0:a',
+            'ffmpeg', '-ss', str(start+15), '-i', input_file, '-map', '0:a',
              '-t', str(3), '-c:a', 'copy', output_file + '_3.mp3'
         ])
         subprocess.call([
-            'ffmpeg', '-ss', str(start+3), '-i', input_file, '-map', '0:a',
+            'ffmpeg', '-ss', str(start+15+3), '-i', input_file, '-map', '0:a',
              '-t', str(5), '-c:a', 'copy', output_file + '_5.mp3'
         ])
         subprocess.call([
-            'ffmpeg', '-ss', str(start+8), '-i', input_file, '-map', '0:a',
+            'ffmpeg', '-ss', str(start+8+15), '-i', input_file, '-map', '0:a',
              '-t', str(8), '-c:a', 'copy', output_file + '_8.mp3'
         ])
         subprocess.call([
-            'ffmpeg', '-ss', str(start), '-i', input_file, '-map', '0:a',
-            '-t', str(20), '-c:a', 'copy', output_file + '_20.mp3'
+            'ffmpeg', '-ss', str(start+15), '-i', input_file, '-map', '0:a',
+            '-t', str(30), '-c:a', 'libmp3lame', '-b:a', '256k', '-af', 'afade=t=out:st=29:d=1', output_file + '_30.mp3'
         ])
 
     return chorus_start

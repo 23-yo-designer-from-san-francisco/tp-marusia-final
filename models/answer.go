@@ -28,6 +28,7 @@ const (
 	Yes             = "да"
 	No              = "нет"
 	LetsPlay        = "игра"
+	Read            = "прочитай"
 	Artist          = "исполнител"
 	RandomPlaylist  = "случайн"
 	KeyPhrase       = "ключевая фраза"
@@ -89,6 +90,5 @@ var YouGuessedTexts = []string{
 
 // Для ответов по песням
 const (
-	IWillSayTheAnswer = "Сейчас скажу ответ."
-	ThatIs            = "Это:"
+	ThatIs = "Это:"
 )

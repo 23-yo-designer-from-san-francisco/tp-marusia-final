@@ -3,7 +3,7 @@ import os
 from multiprocessing import Pool, cpu_count
 
 def process(file):
-    find_and_output_chorus(file, f'cut_tracks/{file}_chorus', 20)
+    find_and_output_chorus(file, f'cut_tracks/{file}_chorus', 5)
 
 if __name__ == '__main__':
     dir_name = os.mkdir('cut_tracks')
