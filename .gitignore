@@ -36,3 +36,4 @@ db.backup
 pkg/miniapp/build
 pkg/miniapp/build.zip
 
+pkg/pychorus/build/*

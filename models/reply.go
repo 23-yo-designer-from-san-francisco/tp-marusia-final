@@ -32,7 +32,7 @@ func GetScoreText(userSession *Session) string {
 		pointsStr = "балла"
 	}
 	if userSession.CompetitionMode {
-		score = fmt.Sprintf("%s %d %s.", YourScore, userSession.CurrentPoints, pointsStr)
+		score = fmt.Sprintf("%s %d %s. ", YourScore, userSession.CurrentPoints, pointsStr)
 	}
 	return score
 }
@@ -60,7 +60,7 @@ func LosePhrase(userSession *Session) (string, string) {
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
 	didntGuessPhrase := YouDidntGuessTexts[rng.Int63()%int64(len(YouDidntGuessTexts))]
-	str = fmt.Sprintf("%s %s %s %s", didntGuessPhrase, IWillSayTheAnswer,
+	str = fmt.Sprintf("%s %s %s", didntGuessPhrase,
 		SaySongInfoString(userSession), GetScoreText(userSession))
 	
 	ttsString := fmt.Sprintf("%s %s %s <speaker audio_vk_id=%s > %s", didntGuessPhrase, IWillSayTheAnswer,
