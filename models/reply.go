@@ -62,23 +62,26 @@ func LosePhrase(userSession *Session) (string, string) {
 	didntGuessPhrase := YouDidntGuessTexts[rng.Int63()%int64(len(YouDidntGuessTexts))]
 	str = fmt.Sprintf("%s %s %s", didntGuessPhrase,
 		SaySongInfoString(userSession), GetScoreText(userSession))
+	
+	ttsString := fmt.Sprintf("%s %s %s <speaker audio_vk_id=%s > %s", didntGuessPhrase, IWillSayTheAnswer,
+		SaySongInfoString(userSession), userSession.CurrentTrack.Duration5, GetScoreText(userSession))
 
 	str = CheckPlaylistFinished(userSession, str)
-
+	ttsString = CheckPlaylistFinished(userSession, ttsString)
 	if userSession.Fails%4 == 0 && userSession.Fails != 0 {
 		str = fmt.Sprintf("%s %s", str, Notify)
 	}
 
-	return str, str
+	return str, ttsString
 }
 
 func addPoints(userSession *Session, divider int) *Session {
 	switch userSession.CurrentLevel {
-	case Two:
+	case Three:
 		userSession.CurrentPoints += GuessedAttempt1 / divider
 	case Five:
 		userSession.CurrentPoints += GuessedAttempt2 / divider
-	case Ten:
+	case Eight:
 		userSession.CurrentPoints += GuessedAttempt3 / divider
 	}
 	fmt.Println("Points: ", userSession.CurrentPoints)
@@ -119,10 +122,12 @@ func WinPhrase(userSession *Session) (string, string) {
 	guessedPhrase := YouGuessedTexts[rng.Int63()%int64(len(YouGuessedTexts))]
 	userSession = countPoints(userSession)
 	fmt.Println("After Func Points: ", userSession.CurrentPoints)
-	textString := fmt.Sprintf("%s %s %s %s", guessedPhrase, GetScoreText(userSession), ToContinue, ToStop)
+	textString := fmt.Sprintf("%s %s", guessedPhrase, GetScoreText(userSession))
 	ttsString := textString
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
+	listenPhrase := LetsListenTrack[rng.Int63()%int64(len(LetsListenTrack))]
+	ttsString = fmt.Sprintf("%s %s <speaker audio_vk_id=%s >", ttsString, listenPhrase, userSession.CurrentTrack.Duration30)
 	return textString, ttsString
 }
 

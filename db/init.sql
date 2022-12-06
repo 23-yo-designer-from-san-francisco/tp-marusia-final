@@ -8,10 +8,10 @@ CREATE TABLE IF NOT EXISTS music (
     id serial not null unique,
     title text,
     artist text,
-    duration_two_url text,
     duration_three_url text,
     duration_five_url text,
-    duration_fifteen_url text,
+    duration_eight_url text,
+    duration_thirty_url text,
     human_titles text[],
     UNIQUE (title, artist)
 );
@@ -52,6 +52,3 @@ CREATE TABLE IF NOT EXISTS track_history (
     guessed boolean,
     attempts int
 );
-
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
