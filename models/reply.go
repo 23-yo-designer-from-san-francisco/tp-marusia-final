@@ -63,7 +63,7 @@ func LosePhrase(userSession *Session) (string, string) {
 	str = fmt.Sprintf("%s %s %s", didntGuessPhrase,
 		SaySongInfoString(userSession), GetScoreText(userSession))
 	
-	ttsString := fmt.Sprintf("%s %s %s <speaker audio_vk_id=%s > %s", didntGuessPhrase, IWillSayTheAnswer,
+	ttsString := fmt.Sprintf("%s %s <speaker audio_vk_id=%s > %s", didntGuessPhrase,
 		SaySongInfoString(userSession), userSession.CurrentTrack.Duration5, GetScoreText(userSession))
 
 	str = CheckPlaylistFinished(userSession, str)
@@ -127,7 +127,7 @@ func WinPhrase(userSession *Session) (string, string) {
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
 	listenPhrase := LetsListenTrack[rng.Int63()%int64(len(LetsListenTrack))]
-	ttsString = fmt.Sprintf("%s %s <speaker audio_vk_id=%s >", ttsString, listenPhrase, userSession.CurrentTrack.Duration30)
+	ttsString = fmt.Sprintf("%s %s <speaker audio_vk_id=%s >", ttsString, listenPhrase, userSession.CurrentTrack.Duration8)
 	return textString, ttsString
 }
 
