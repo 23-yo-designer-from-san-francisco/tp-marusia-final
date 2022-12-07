@@ -66,7 +66,7 @@ const Home = ({id, showLoader}) => {
             <Group header={<Header mode="secondary">Название плейлиста</Header>}>
                 <PlaylistTitle updateTitleKey={setTitleKey} showLoader={showLoader} title={playlistTitle}/>
             </Group>
-            <Button onClick={savePlaylist} sizeY={SizeType.REGULAR}>Сохранить плейлист</Button>
+            <Button class="save-playlist-button" onClick={savePlaylist} sizeY={SizeType.REGULAR}>Сохранить плейлист</Button>
             <Group header={<Header mode="secondary">Доступные треки</Header>}>
                 <Tracks updateSelectedTracks={setSelectedTracks} tracks={tracks}/>
             </Group>
