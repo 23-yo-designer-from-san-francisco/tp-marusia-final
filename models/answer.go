@@ -32,6 +32,7 @@ const (
 	Artist          = "исполнител"
 	RandomPlaylist  = "случайн"
 	KeyPhrase       = "ключевая фраза"
+	IWant           = "Хочу"
 )
 
 // Для выбора жанра

@@ -67,7 +67,8 @@ func MainHandler(r marusia.Request,
 			// попросили поменять артиста
 			userSession.GameState = models.ChooseArtistState
 			resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
-		} else if userSession.CompetitionMode && utils.ContainsAny(r.Request.Command, models.CompetitionRule) {
+		} else if (userSession.GameState.GameStatus == models.StatusCompetitionRules) &&
+			utils.ContainsAny(r.Request.Command, models.CompetitionRule, models.Read, models.IWant) {
 			resp.Text, resp.TTS = models.CompetitionRulesPhrase()
 		} else {
 			switch userSession.GameState.GameStatus {
