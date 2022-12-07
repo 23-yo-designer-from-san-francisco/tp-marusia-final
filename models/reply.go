@@ -45,7 +45,7 @@ func CheckPlaylistFinished(userSession *Session, str string) string {
 			str = fmt.Sprintf("%s %s %s", str, "Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase))
 		}
 	} else {
-		str += ToContinue
+		str += ToContinue + " "
 		str += ToStop
 	}
 
