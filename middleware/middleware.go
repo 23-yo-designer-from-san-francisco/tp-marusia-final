@@ -16,15 +16,18 @@ func NewMiddleware() *Middleware {
 	}
 }
 const miniappRegex = `^https:\/\/prod-app[0-9]*-[a-z 0-9]*\.pages-ac\.vk-apps\.com$`
+const debugRegex = `^https:\/\/user[0-9]*-[a-z 0-9]*\.wormhole\.vk-apps\.com$`
 
 func (m *Middleware) CORSMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
 		isAllowed := false
+		isAllowedDebug := false
 		
 		isAllowed, _ = regexp.MatchString(miniappRegex,origin)
+		isAllowedDebug, _ = regexp.MatchString(debugRegex,origin)
 
-		if !isAllowed {
+		if !isAllowed && !isAllowedDebug {
 			log.Print("CORS not allowed origin = ", origin)
 			return
 		}
