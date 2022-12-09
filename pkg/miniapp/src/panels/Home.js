@@ -18,17 +18,15 @@ const Home = ({id, showLoader}) => {
         showLoader(true);
         const response = await fetch(`${BASE_URL}/music`);
         const jsonResponse = await response.json();
-        console.log(jsonResponse);
         setTracks(jsonResponse);
         showLoader(false);
     }
 
     async function savePlaylist() {
         const tr = [];
-        console.log(1, selectedTracks);
         for (const [key, value] of Object.entries(selectedTracks)) {
             if (value) {
-                tr.push(tracks[key - 1].id)
+                tr.push(Number(key))
             }
         }
         await fetch(`${BASE_URL}/playlists/create`, {
@@ -66,7 +64,8 @@ const Home = ({id, showLoader}) => {
             <Group header={<Header mode="secondary">Название плейлиста</Header>}>
                 <PlaylistTitle updateTitleKey={setTitleKey} showLoader={showLoader} title={playlistTitle}/>
             </Group>
-            <Button class="save-playlist-button" onClick={savePlaylist} sizeY={SizeType.REGULAR}>Сохранить плейлист</Button>
+            <Button class="save-playlist-button" onClick={savePlaylist} sizeY={SizeType.REGULAR}>Сохранить
+                плейлист</Button>
             <Group header={<Header mode="secondary">Доступные треки</Header>}>
                 <Tracks updateSelectedTracks={setSelectedTracks} tracks={tracks}/>
             </Group>
