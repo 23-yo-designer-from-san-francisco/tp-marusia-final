@@ -125,7 +125,7 @@ func WinPhrase(userSession *Session) (string, string) {
 	textString := fmt.Sprintf("%s %s", guessedPhrase, GetScoreText(userSession))
 	ttsString := textString
 	if !userSession.CompetitionMode {
-		textString = fmt.Sprintf("%sЭто %s — %s", textString, userSession.CurrentTrack.Artist, userSession.CurrentTrack.Title)
+		textString = fmt.Sprintf("%sЭто %s — %s. ", textString, userSession.CurrentTrack.Artist, userSession.CurrentTrack.Title)
 	}
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
