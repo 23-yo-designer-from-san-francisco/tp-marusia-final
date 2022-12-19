@@ -62,7 +62,7 @@ func LosePhrase(userSession *Session) (string, string) {
 	didntGuessPhrase := YouDidntGuessTexts[rng.Int63()%int64(len(YouDidntGuessTexts))]
 	str = fmt.Sprintf("%s %s %s", didntGuessPhrase,
 		SaySongInfoString(userSession), GetScoreText(userSession))
-	
+
 	ttsString := fmt.Sprintf("%s %s <speaker audio_vk_id=%s > %s", didntGuessPhrase,
 		SaySongInfoString(userSession), userSession.CurrentTrack.Duration5, GetScoreText(userSession))
 
@@ -88,7 +88,7 @@ func addPoints(userSession *Session, divider int) *Session {
 	return userSession
 }
 
-//Должна вызываться перед winPhrase and losePhrase
+// Должна вызываться перед winPhrase and losePhrase
 func countPoints(userSession *Session) *Session {
 	fmt.Println("ArtistMatch: ", userSession.ArtistMatch)
 	fmt.Println("TitleMatch: ", userSession.TitleMatch)
@@ -124,6 +124,9 @@ func WinPhrase(userSession *Session) (string, string) {
 	fmt.Println("After Func Points: ", userSession.CurrentPoints)
 	textString := fmt.Sprintf("%s %s", guessedPhrase, GetScoreText(userSession))
 	ttsString := textString
+	if !userSession.CompetitionMode {
+		textString = fmt.Sprintf("%sЭто %s — %s", textString, userSession.CurrentTrack.Artist, userSession.CurrentTrack.Title)
+	}
 	textString = CheckPlaylistFinished(userSession, textString)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
 	listenPhrase := LetsListenTrack[rng.Int63()%int64(len(LetsListenTrack))]

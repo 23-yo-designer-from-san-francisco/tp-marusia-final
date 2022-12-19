@@ -86,7 +86,7 @@ var YouDidntGuessTexts = []string{
 var YouGuessedTexts = []string{
 	"Вы молодец! Угадали!",
 	"Абсолютно верно!",
-	"Конечно!",
+	"Правильно!",
 }
 
 var LetsListenTrack = []string{
