@@ -114,7 +114,7 @@ func MainHandler(r marusia.Request,
 					userSession.GameState = models.ChooseArtistState
 					resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
 				} else {
-					// ищем названный жанр и начинаем игру
+					// ищем названный жанр или исполнителя и начинаем игру
 					resp = SelectGenre(userSession, r.Request.Command, nouns, adjectives, resp, musicU, playlistU, rng)
 				}
 				logrus.Debug("GenresResponse", r, userSession)

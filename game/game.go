@@ -197,9 +197,7 @@ func SelectGenre(userSession *models.Session, command string, nouns []string, ad
 		fmt.Println(err.Error())
 	}
 	if err != nil || len(tracks) == 0 {
-		str := "Извините, я не нашла нужный жанр, либо просто вас не поняла. Попробуйте ещё"
-		resp.Text, resp.TTS = str, str
-		return resp
+		return SelectArtist(userSession, command, nouns, adjectives, resp, mU, pU, rng)
 	}
 
 	userSession.TrackCounter = 0
@@ -249,7 +247,7 @@ func SelectArtist(userSession *models.Session, command string, nouns []string, a
 		fmt.Println(err.Error())
 	}
 	if err != nil || len(tracks) == 0 {
-		str := "Извините, я не знаю о таком исполнителя. Назовите кого-нибудь ещё."
+		str := "Извините, я ничего не нашла. Назовите кого-нибудь ещё."
 		resp.Text, resp.TTS = str, str
 		return resp
 	}
