@@ -61,12 +61,11 @@ func getRespTextFromLevel(userSession *models.Session) (string, string) {
 
 	if userSession.TrackCounter == 1 && userSession.CurrentLevel == models.Three {
 		if userSession.GameMode == models.ArtistMode {
-			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
-		} else {
-			preWin = fmt.Sprintf("Вы выбрали жанр «%s». Вы можете в любой момент «Сменить игру», «Сменить исполнителя» или «Сменить жанр». ", userSession.CurrentGenre)
-		}
-		if userSession.CompetitionMode {
+			preWin = fmt.Sprintf("Вы выбрали исполнителя «%s». ", userSession.CurrentGenre)
+		} else if userSession.CompetitionMode {
 			preWin = fmt.Sprintf("%s «%s». %s", "Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase), preWin)
+		} else {
+			preWin = fmt.Sprintf("Вы выбрали жанр «%s». ", userSession.CurrentGenre)
 		}
 	}
 

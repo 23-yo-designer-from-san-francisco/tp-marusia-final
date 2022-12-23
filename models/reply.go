@@ -45,10 +45,8 @@ func CheckPlaylistFinished(userSession *Session, str string) string {
 			str = fmt.Sprintf("%s %s %s", str, "Ключевая фраза вашего плейлиста:", strings.Title(userSession.KeyPhrase))
 		}
 	} else {
-		str += ToContinue + " "
-		str += ToStop
+		str += ToContinue
 	}
-
 	return str
 }
 
@@ -56,7 +54,6 @@ func CheckPlaylistFinished(userSession *Session, str string) string {
 func LosePhrase(userSession *Session) (string, string) {
 	var str string
 	userSession = countPoints(userSession)
-	userSession.Fails += 1
 	rng := rand.New(mt19937.New())
 	rng.Seed(time.Now().UnixNano())
 	didntGuessPhrase := YouDidntGuessTexts[rng.Int63()%int64(len(YouDidntGuessTexts))]
@@ -68,9 +65,6 @@ func LosePhrase(userSession *Session) (string, string) {
 
 	str = CheckPlaylistFinished(userSession, str)
 	ttsString = CheckPlaylistFinished(userSession, ttsString)
-	if userSession.Fails%4 == 0 && userSession.Fails != 0 {
-		str = fmt.Sprintf("%s %s", str, Notify)
-	}
 
 	return str, ttsString
 }
@@ -136,13 +130,12 @@ func WinPhrase(userSession *Session) (string, string) {
 
 // Начало Игры
 func StartGamePhrase() (string, string) {
-	str := fmt.Sprintf("%s %s %s %s", ToStart, ToStartCompetitive, ToStop, ToKeyPhrase)
+	str := fmt.Sprintf("%s %s", ToStart, ToRules)
 	return str, str
 }
 
 func ChooseGenrePhrase() (string, string) {
-	str := fmt.Sprintf("%s", ChooseGenre)
-	return str, ChooseGenreTTS
+	return ChooseGenre, ChooseGenre
 }
 
 func PlayingGamePhrase() (string, string) {
@@ -166,8 +159,23 @@ func ChooseArtistPhrase() (string, string) {
 	return str, str
 }
 
+func ChooseGamePhrase() (string, string) {
+	str := fmt.Sprintf("%s %s %s", ToMainGame, ToCompetitionGame, ToPhraseGame)
+	return str, str
+}
+
+func RulesPhrase() (string, string) {
+	str := fmt.Sprintf("%s %s %s %s %s", ToChange, ToMainGame, ToCompetitionGame, ToPhraseGame, ToStop)
+	return str, str
+}
+
+func StartRulesPhrase() (string, string) {
+	str := fmt.Sprintf("%s %s %s %s %s", ToMainGame, ToCompetitionGame, ToPhraseGame, ToChange, ToStop)
+	return str, str
+}
+
 func CompetitionRulesPhrase() (string, string) {
-	str := CompetitionRules
+	str := fmt.Sprintf("%s %s %s", CompetitionRules, ToChange, ToStop)
 	return str, str
 }
 

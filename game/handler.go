@@ -54,7 +54,7 @@ func MainHandler(r marusia.Request,
 		if utils.ContainsAny(r.Request.Command, models.ChangeGame, models.ChangeGame_, models.AnotherGame) {
 			// попросили поменять игру
 			userSession.GameState = models.NewGameState
-			resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
+			resp.Text, resp.TTS = models.ChooseGamePhrase()
 		} else if utils.ContainsAny(r.Request.Command, models.ChangeGenre, models.ChangeGenre_, models.AnotherGenre) {
 			// попросили поменять жанр
 			userSession.GameState = models.ChooseGenreState
@@ -67,9 +67,16 @@ func MainHandler(r marusia.Request,
 			// попросили поменять артиста
 			userSession.GameState = models.ChooseArtistState
 			resp.Text, resp.TTS = userSession.GameState.SayStandartPhrase()
-		} else if (userSession.GameState.GameStatus == models.StatusCompetitionRules) &&
-			utils.ContainsAny(r.Request.Command, models.CompetitionRule, models.Read, models.IWant) {
+		} else if (userSession.GameState.GameStatus == models.StatusCompetitionRules || userSession.CompetitionMode) &&
+			// чтение правил в соревновательном режиме
+			utils.ContainsAny(r.Request.Command, models.Rule, models.Read, models.IWant) {
 			resp.Text, resp.TTS = models.CompetitionRulesPhrase()
+		} else if (userSession.GameState.GameStatus == models.StatusNewGame) && utils.ContainsAny(r.Request.Command, models.Rule) {
+			// чтение правил в начале игры
+			resp.Text, resp.TTS = models.StartRulesPhrase()
+		} else if utils.ContainsAny(r.Request.Command, models.Rule) {
+			// чтение правил в другом месте
+			resp.Text, resp.TTS = models.RulesPhrase()
 		} else {
 			switch userSession.GameState.GameStatus {
 			case models.StatusNewGame:

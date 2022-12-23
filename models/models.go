@@ -63,7 +63,6 @@ type Session struct {
 	CurrentGenre    string
 	GameMode        int
 	TrackCounter    int
-	Fails           int
 	GameState       *State
 	CurrentPlaylist []VKTrack
 	CompetitionMode bool
@@ -72,9 +71,9 @@ type Session struct {
 
 func NewSession() *Session {
 	return &Session{
-		PlayedTracks: make(map[int]bool),
-		GameState:    NewGameState,
-		GameMode:     GenreMode,
+		PlayedTracks:  make(map[int]bool),
+		GameState:     NewGameState,
+		GameMode:      GenreMode,
 		CurrentPoints: 0,
 	}
 }
@@ -97,19 +96,19 @@ type VKTrack struct {
 }
 
 type MiniAppTrack struct {
-	ID                      int                 `json:"id,omitempty" db:"id"`
-	Title                   string              `json:"title,omitempty" db:"title"`
-	Artist                  string              `json:"artist,omitempty" db:"artist"`
+	ID     int    `json:"id,omitempty" db:"id"`
+	Title  string `json:"title,omitempty" db:"title"`
+	Artist string `json:"artist,omitempty" db:"artist"`
 }
 
 type TitleInfo struct {
-	TitleKey                string              `json:"title_key,omitempty"`
-	Title                   string              `json:"title,omitempty"`
+	TitleKey string `json:"title_key,omitempty"`
+	Title    string `json:"title,omitempty"`
 }
 
 type MiniAppPlaylist struct {
-	TitleKey string `json:"title_key,omitempty"`
-	TracksIds []int `json:"music_ids,omitempty"`
+	TitleKey  string `json:"title_key,omitempty"`
+	TracksIds []int  `json:"music_ids,omitempty"`
 }
 
 func (track *VKTrack) checkTitleInAnswer(answer string) bool {
