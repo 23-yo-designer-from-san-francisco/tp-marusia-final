@@ -39,17 +39,10 @@ func main() {
 	log.Init(logrus.DebugLevel)
 	log.Info(fmt.Sprintf(message+"started, log level = %s", logrus.DebugLevel))
 
-	viper.AddConfigPath("../../config")
-	viper.SetConfigName("config")
+	viper.SetConfigFile("./.env")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Error("Config isn't found 1")
-		os.Exit(1)
-	}
-	viper.SetConfigFile("../../.env")
-	err = viper.MergeInConfig()
-	if err != nil {
-		log.Error("Config isn't found 2")
+		log.Error(".env file isn't found")
 		os.Exit(1)
 	}
 
@@ -64,8 +57,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	adjectives := utils.ReadCsvFile("../../config/adjectives.txt")
-	nouns := utils.ReadCsvFile("../../config/nouns.txt")
+	adjectives := utils.ReadCsvFile(viper.GetString("ADJECTIVES_FILEPATH"))
+	nouns := utils.ReadCsvFile(viper.GetString("NOUNS_FILEPATH"))
 
 	middleware := middleware.NewMiddleware()
 
@@ -104,7 +97,7 @@ func main() {
 	router.MusicEndpoints(musicRouter, musicD)
 	router.PlaylistEndpoints(playlistRouter, playlistD)
 
-	err = r.Run(":8080")
+	err = r.Run(fmt.Sprintf(":%d", viper.GetInt("SERVER_PORT")))
 	if err != nil {
 		return
 	}

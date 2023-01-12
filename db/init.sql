@@ -52,3 +52,23 @@ CREATE TABLE IF NOT EXISTS track_history (
     guessed boolean,
     attempts int
 );
+
+COPY artist
+    FROM '/docker-entrypoint-initdb.d/csv/artist.csv'
+    DELIMITER ';' CSV HEADER;
+
+COPY genre
+    FROM '/docker-entrypoint-initdb.d/csv/genre.csv'
+    DELIMITER ';' CSV HEADER;
+
+COPY music
+    FROM '/docker-entrypoint-initdb.d/csv/music.csv'
+    DELIMITER ';' CSV HEADER;
+
+COPY artist_music
+    FROM '/docker-entrypoint-initdb.d/csv/artist_music.csv'
+    DELIMITER ';' CSV HEADER;
+
+COPY genre_music
+    FROM '/docker-entrypoint-initdb.d/csv/genre_music.csv'
+    DELIMITER ';' CSV HEADER;

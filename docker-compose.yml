@@ -6,7 +6,6 @@ services:
     build: 
       context: .
     restart: unless-stopped
-    command: "./marusia"
     ports:
       - "8080:8080"
     depends_on:

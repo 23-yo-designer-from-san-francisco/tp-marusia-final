@@ -10,5 +10,4 @@ RUN go mod download
 COPY . .
 RUN make server
 EXPOSE 8080
-WORKDIR /app/bin/api
-CMD ["./marusia"]
+CMD ["./bin/api/marusia"]

@@ -18,8 +18,8 @@ func InitPostgres() (*sqlx.DB, error) {
 	user := viper.GetString("POSTGRES_USER")
 	database := viper.GetString("POSTGRES_DB")
 	password := viper.GetString("POSTGRES_PASSWORD")
-	host := viper.GetString("postgres.host")
-	port := fmt.Sprintf("%d", viper.GetInt("postgres.port"))
+	host := viper.GetString("POSTGRES_HOST")
+	port := fmt.Sprintf("%d", viper.GetInt("POSTGRES_PORT"))
 
 	config, err := pgxpool.ParseConfig(buildConnectionString(user, password, host, port, database))
 	if err != nil {
