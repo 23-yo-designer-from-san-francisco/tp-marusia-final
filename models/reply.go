@@ -174,6 +174,12 @@ func StartRulesPhrase() (string, string) {
 	return str, str
 }
 
+func PhraseCompetitionRulesPhrase() (string, string) {
+	str := fmt.Sprintf("%s %s %s", PhraseCompetitionRules, ToChange, ToStop)
+	ttsStr := fmt.Sprintf("%s %s %s", PhraseCompetitionRulesTTS, ToChange, ToStop)
+	return str, ttsStr
+}
+
 func CompetitionRulesPhrase() (string, string) {
 	str := fmt.Sprintf("%s %s %s", CompetitionRules, ToChange, ToStop)
 	return str, str
