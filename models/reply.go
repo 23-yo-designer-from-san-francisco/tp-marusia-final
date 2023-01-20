@@ -191,7 +191,7 @@ func PlaylistFinishedPhrase() (string, string) {
 }
 
 func KeyPhrasePlaylistPhrase() (string, string) {
-	str := KeyPhrasePlaylist
+	str := fmt.Sprintf("%s %s", KeyPhrasePlaylist, KeyPhraseHelp)
 	return str, str
 }
 
